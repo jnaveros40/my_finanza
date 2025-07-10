@@ -34,10 +34,41 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  # Dependencias de Firebase
+  firebase_core: ^3.13.0 # Para inicializar Firebase
+  firebase_auth: ^5.5.2 # Para autenticación
+  cloud_firestore: ^5.6.6 # Para la base de datos Firestore
+  firebase_storage: ^12.4.5 # Para almacenamiento de archivos
+  firebase_messaging: ^15.2.5 # Para notificaciones push
+  firebase_analytics: ^11.4.5 # Para análisis de datos
+  firebase_crashlytics: ^4.3.5 # Para informes de fallos
+
+  fl_chart: ^1.00.0 # Para gráficos y visualizaciones
+  month_picker_dialog: ^6.0.3 # Para el selector de meses
+  uuid: ^4.3.3 # Para generar identificadores únicos
+  collection: ^1.18.0 # Para trabajar con colecciones de datos
+  google_sign_in: ^6.3.0 # Para inicio de sesión con Google
+  provider: ^6.1.5 # Para gestión de estado
+  dio: ^5.8.0 # Para realizar peticiones HTTP
+  rxdart: ^0.28.0 # Para programación reactiva
+  
+  intl: ^0.20.2 # Para formateo de fechas y números (ajustado para compatibilidad)  table_calendar: ^3.0.0 # Para calendario
+  shared_preferences: ^2.5.3 # Para almacenamiento local
+  http: ^1.4.0 # Para realizar peticiones HTTP
+  speech_to_text: ^7.0.0 # Para reconocimiento de voz
+  flutter_local_notifications: ^17.0.0 # Para notificaciones locales
+  connectivity_plus: ^6.1.2 # Para detectar conectividad de red
+  sqflite: ^2.4.1 # Base de datos local SQLite para caché offline
+  path: ^1.9.1 # Para trabajar con rutas de archivos
+  share_plus: ^11.0.0
+  path_provider: ^2.1.5
+  file_picker: ^8.0.0+1
+  csv: ^6.0.0 # Para generar archivos CSV
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  intl_utils: ^2.8.4 # Para generar archivos de localización  
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -59,6 +90,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   # assets:
+  assets:
+  #    - assets/images/google_logo.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
