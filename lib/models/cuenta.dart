@@ -4,6 +4,7 @@ class Cuenta {
   final String tipoCuenta; // Ej: Ahorro, Corriente, Inversión
   final String moneda; // Ej: MXN, USD, EUR
   final double saldoInicial;
+  final double saldoActual;
   final double tasaRendimiento;
   final String llave;
   final String numeroCuenta;
@@ -14,6 +15,7 @@ class Cuenta {
     required this.tipoCuenta,
     required this.moneda,
     required this.saldoInicial,
+    required this.saldoActual,
     required this.tasaRendimiento,
     required this.llave,
     required this.numeroCuenta,
@@ -26,6 +28,7 @@ class Cuenta {
       tipoCuenta: map['tipo_cuenta'] ?? '',
       moneda: map['moneda'] ?? '',
       saldoInicial: (map['saldo_inicial'] as num?)?.toDouble() ?? 0.0,
+      saldoActual: (map['saldo_actual'] as num?)?.toDouble() ?? 0.0,
       tasaRendimiento: (map['tasa_rendimiento'] as num?)?.toDouble() ?? 0.0,
       llave: map['llave'] ?? '',
       numeroCuenta: map['numero_cuenta'] ?? '',
@@ -38,6 +41,7 @@ class Cuenta {
       'tipo_cuenta': tipoCuenta,
       'moneda': moneda,
       'saldo_inicial': saldoInicial,
+      'saldo_actual': saldoActual,
       'tasa_rendimiento': tasaRendimiento,
       'llave': llave,
       'numero_cuenta': numeroCuenta,

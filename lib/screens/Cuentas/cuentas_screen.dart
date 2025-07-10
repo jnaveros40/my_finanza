@@ -99,7 +99,7 @@ class _CuentasScreenState extends State<CuentasScreen> {
                       DataCell(Text(c.nombre)),
                       DataCell(Text(c.tipoCuenta)),
                       DataCell(Text(c.moneda)),
-                      DataCell(Text(c.saldoInicial.toString())),
+                      DataCell(Text(c.saldoActual.toString())),
                       DataCell(Text(c.tasaRendimiento.toString())),
                       DataCell(Text(c.llave)),
                       DataCell(Text(c.numeroCuenta)),

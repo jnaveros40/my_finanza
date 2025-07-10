@@ -53,12 +53,20 @@ class _CuentasCrearEditarScreenState extends State<CuentasCrearEditarScreen> {
   }
 
   void _save() {
+    final saldoInicialValue = double.tryParse(saldoCtrl.text) ?? 0;
+    double saldoActualValue;
+    if (widget.cuenta == null) {
+      saldoActualValue = saldoInicialValue;
+    } else {
+      saldoActualValue = widget.cuenta!.saldoActual;
+    }
     final cuenta = Cuenta(
       id: widget.cuenta?.id,
       nombre: nombreCtrl.text,
       tipoCuenta: tipoCuenta,
       moneda: moneda,
-      saldoInicial: double.tryParse(saldoCtrl.text) ?? 0,
+      saldoInicial: saldoInicialValue,
+      saldoActual: saldoActualValue,
       tasaRendimiento: double.tryParse(tasaCtrl.text) ?? 0,
       llave: llaveCtrl.text,
       numeroCuenta: numeroCtrl.text,

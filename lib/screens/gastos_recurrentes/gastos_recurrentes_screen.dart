@@ -173,7 +173,7 @@ class _GastosRecurrentesScreenState extends State<GastosRecurrentesScreen> {
                       DataCell(Text(g.descripcion)),
                       DataCell(Text(g.monto.toString())),
                       DataCell(Text(g.frecuenciaDias.toString())),
-                      DataCell(Text(_cuentas.firstWhere((c) => c.id == g.cuentaId, orElse: () => Cuenta(id: 0, nombre: '-', tipoCuenta: '-', moneda: '-', saldoInicial: 0, tasaRendimiento: 0, llave: '-', numeroCuenta: '-')).nombre)),
+                      DataCell(Text(_cuentas.firstWhere((c) => c.id == g.cuentaId, orElse: () => Cuenta(id: 0, nombre: '-', tipoCuenta: '-', moneda: '-', saldoInicial: 0, saldoActual: 0, tasaRendimiento: 0, llave: '-', numeroCuenta: '-')).nombre)),
                       DataCell(Text(_categorias.firstWhere((c) => c.id == g.categoriaId, orElse: () => Categoria(id: 0, nombre: '-', tipoCategoria: '-', tipoPresupuesto: '-')).nombre)),
                       DataCell(Text(g.fechaInicio.toLocal().toString().split(' ')[0])),
                       DataCell(Text(g.fechaFinal != null ? g.fechaFinal!.toLocal().toString().split(' ')[0] : '-')),

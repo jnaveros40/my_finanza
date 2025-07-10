@@ -256,10 +256,10 @@ class _MovimientosScreenState extends State<MovimientosScreen> {
                       DataCell(Text(m.descripcion)),
                       DataCell(Text(m.monto.toString())),
                       DataCell(Text(m.tipoMovimiento)),
-                      DataCell(Text(_cuentas.firstWhere((c) => c.id == m.cuentaId, orElse: () => Cuenta(id: 0, nombre: '-', tipoCuenta: '-', moneda: '-', saldoInicial: 0, tasaRendimiento: 0, llave: '-', numeroCuenta: '-')).nombre)),
+                      DataCell(Text(_cuentas.firstWhere((c) => c.id == m.cuentaId, orElse: () => Cuenta(id: 0, nombre: '-', tipoCuenta: '-', moneda: '-', saldoInicial: 0, saldoActual: 0, tasaRendimiento: 0, llave: '-', numeroCuenta: '-')).nombre)),
                       DataCell(Text(_categorias.firstWhere((c) => c.id == m.categoriaId, orElse: () => Categoria(id: 0, nombre: '-', tipoCategoria: '-', tipoPresupuesto: '-')).nombre)),
                       DataCell(Text(m.fecha.toLocal().toString().split(' ')[0])),
-                      DataCell(Text(m.cuentaDestinoId != null ? _cuentas.firstWhere((c) => c.id == m.cuentaDestinoId, orElse: () => Cuenta(id: 0, nombre: '-', tipoCuenta: '-', moneda: '-', saldoInicial: 0, tasaRendimiento: 0, llave: '-', numeroCuenta: '-')).nombre : '-')),
+                      DataCell(Text(m.cuentaDestinoId != null ? _cuentas.firstWhere((c) => c.id == m.cuentaDestinoId, orElse: () => Cuenta(id: 0, nombre: '-', tipoCuenta: '-', moneda: '-', saldoInicial: 0, saldoActual: 0, tasaRendimiento: 0, llave: '-', numeroCuenta: '-')).nombre : '-')),
                       DataCell(Text(m.observacion ?? '')),
                       DataCell(Row(
                         children: [
