@@ -1,16 +1,15 @@
 // lib/main.dart
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart'; // Importar el paquete provider
+import 'package:provider/provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'firebase_options.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/core/main_app_screen.dart';
-import 'services/push_notification_service.dart';
+import 'screens/Auth/login_screen.dart';
+import 'supabase/auth_service_supabase.dart';
+import 'screens/dashboard/dashboard_screen.dart';
+import 'supabase/supabase_init.dart';
+// import 'services/push_notification_service.dart';
 
 // Clase para manejar el estado del tema (claro/oscuro y ahora el acento de color)
 class ThemeManager extends ChangeNotifier {
@@ -24,36 +23,30 @@ class ThemeManager extends ChangeNotifier {
 
   ThemeMode get themeMode => _themeMode;
   bool get isHighContrastMode => _isHighContrastMode;
-    // Getter que devuelve el color efectivo basado en el modo de contraste
+  // Getter que devuelve el color efectivo basado en el modo de contraste
   Color get accentColor {
     if (_isHighContrastMode) {
-      // En modo alto contraste, usar negro para tema claro y blanco para tema oscuro
       if (_themeMode == ThemeMode.dark) {
         return Colors.white;
       } else if (_themeMode == ThemeMode.light) {
         return Colors.black;
       } else {
-        // Para ThemeMode.system, usar negro como default pero esto se podría mejorar
-        // con context awareness del brillo del sistema
         return Colors.black;
       }
     }
     return _accentColor;
   }
 
-  // Método helper para obtener el color efectivo con context del sistema
   Color getEffectiveAccentColor(BuildContext context) {
     if (_isHighContrastMode) {
       final brightness = _themeMode == ThemeMode.system 
           ? MediaQuery.of(context).platformBrightness 
           : (_themeMode == ThemeMode.dark ? Brightness.dark : Brightness.light);
-      
       return brightness == Brightness.dark ? Colors.white : Colors.black;
     }
     return _accentColor;
   }
 
-  // Getter para obtener el color base sin aplicar alto contraste
   Color get baseAccentColor => _accentColor;
 
   Future<void> _loadThemeFromPrefs() async {
@@ -61,14 +54,12 @@ class ThemeManager extends ChangeNotifier {
     final themeIndex = prefs.getInt('themeMode') ?? 0;
     final accentColorValue = prefs.getInt('accentColor') ?? Colors.teal.value;
     final highContrastMode = prefs.getBool('isHighContrastMode') ?? false;
-    
     _themeMode = ThemeMode.values[themeIndex];
     _accentColor = Color(accentColorValue);
     _isHighContrastMode = highContrastMode;
     notifyListeners();
   }
 
-  // Método para cambiar el tema
   Future<void> setThemeMode(ThemeMode mode) async {
     _themeMode = mode;
     notifyListeners();
@@ -76,7 +67,6 @@ class ThemeManager extends ChangeNotifier {
     await prefs.setInt('themeMode', mode.index);
   }
 
-  // Método para cambiar el color de acento base
   Future<void> setAccentColor(Color color) async {
     _accentColor = color;
     notifyListeners();
@@ -84,7 +74,6 @@ class ThemeManager extends ChangeNotifier {
     await prefs.setInt('accentColor', color.value);
   }
 
-  // Método para alternar el modo de alto contraste
   Future<void> setHighContrastMode(bool enabled) async {
     _isHighContrastMode = enabled;
     notifyListeners();
@@ -97,22 +86,18 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterL
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  
+  await initSupabase();
+
   // Inicialización de notificaciones locales
   const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
   final InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  
-  // Inicializar notificaciones push
-  await PushNotificationService.initialize();
-  
-  // Envolver MyApp con ChangeNotifierProvider para proveer ThemeManager
+
+  // await PushNotificationService.initialize();
+
   runApp(
     ChangeNotifierProvider(
-      create: (context) => ThemeManager(), // Crear una instancia de ThemeManager
+      create: (context) => ThemeManager(),
       child: MyApp(),
     ),
   );
@@ -123,11 +108,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Obtener la instancia de ThemeManager proporcionada por el Provider
     final themeManager = Provider.of<ThemeManager>(context);
-
     return MaterialApp(
-      title: 'JNFinanza_app',
+      title: 'mis finanzas',
       // --- LOCALIZACIÓN ---
       locale: const Locale('es'), // Español por defecto
       supportedLocales: const [
@@ -201,7 +184,6 @@ class MyApp extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           ),
         ),
-        // Quitar la segunda definición de cardTheme para evitar duplicidad
       ),
       // Definir el tema oscuro
       darkTheme: ThemeData(
@@ -265,40 +247,53 @@ class MyApp extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           ),
         ),
-        // Quitar la segunda definición de cardTheme para evitar duplicidad
       ),
       // Usar el themeMode del ThemeManager para controlar qué tema se aplica
       themeMode: themeManager.themeMode,
-      // Usar StreamBuilder para escuchar cambios en el estado de autenticación
-      // Ahora navega a AuthCheckScreen, que decidirá si mostrar Login o MainAppScreen
-      home: AuthCheckScreen(),
+      // Control de sesión: si hay usuario, ir al dashboard; si no, al login
+      home: const SessionChecker(),
     );
   }
 }
 
-// Widget para verificar el estado de autenticación y mostrar la pantalla correcta
-class AuthCheckScreen extends StatelessWidget {
-  const AuthCheckScreen({super.key});
+// Widget que decide a dónde ir según la sesión de Supabase
+class SessionChecker extends StatefulWidget {
+  const SessionChecker({Key? key}) : super(key: key);
+
+  @override
+  State<SessionChecker> createState() => _SessionCheckerState();
+}
+
+class _SessionCheckerState extends State<SessionChecker> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkSession());
+  }
+
+  void _checkSession() {
+    final user = SupabaseAuthService().currentUser;
+    if (user != null && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(email: user.email ?? ''),
+        ),
+      );
+    } else if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const SupabaseLoginScreen(),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Scaffold(body: Center(child: Text('Error: ${snapshot.error}')));
-        }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(body: Center(child: CircularProgressIndicator()));
-        }        // Si hay usuario autenticado, ir a la pantalla principal con la navegación inferior
-        if (snapshot.hasData) {
-          return MainAppScreen(initialIndex: 0); // Navegar a MainAppScreen iniciando en Dashboard (índice 0)
-        }
-
-        // Si no hay usuario autenticado
-        return LoginScreen();
-      },
+    // Pantalla de carga mientras se decide
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }
+
