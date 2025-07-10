@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'screens/supabase_login_screen.dart';
+import 'screens/Auth/login_screen.dart';
 import 'supabase/supabase_init.dart';
 // import 'services/push_notification_service.dart';
 
@@ -108,7 +108,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeManager = Provider.of<ThemeManager>(context);
     return MaterialApp(
-      title: 'JNFinanza_app',
+      title: 'mis finanzas',
       // --- LOCALIZACIÓN ---
       locale: const Locale('es'), // Español por defecto
       supportedLocales: const [

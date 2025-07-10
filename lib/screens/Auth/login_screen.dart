@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../supabase/auth_service_supabase.dart';
-import 'supabase_home_screen.dart';
+import '../../supabase/auth_service_supabase.dart';
+import '../dashboard/dashboard_screen.dart';
 
 class SupabaseLoginScreen extends StatefulWidget {
   const SupabaseLoginScreen({Key? key}) : super(key: key);
@@ -31,7 +31,7 @@ class _SupabaseLoginScreenState extends State<SupabaseLoginScreen> {
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => SupabaseHomeScreen(email: response.user!.email ?? '')), // Puedes mostrar el email
+          MaterialPageRoute(builder: (context) => DashboardScreen(email: response.user!.email ?? '')),
         );
       } else {
         setState(() {
