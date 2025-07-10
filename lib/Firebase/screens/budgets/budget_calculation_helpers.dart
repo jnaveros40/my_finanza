@@ -1,5 +1,5 @@
 // lib/screens/budgets/budget_calculation_helpers.dart
-
+/*
 import 'package:intl/intl.dart';
 import '../../models/budget.dart';
 import '../../models/movement.dart';
@@ -250,3 +250,4 @@ mixin BudgetCalculationHelpers {
     };
   }
 }
+*/

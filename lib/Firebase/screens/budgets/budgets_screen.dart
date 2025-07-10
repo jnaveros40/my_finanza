@@ -1,5 +1,5 @@
 // lib/screens/budgets/budgets_screen.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/budget.dart';
@@ -855,3 +855,4 @@ class _BudgetsScreenState extends State<BudgetsScreen>
     );
   }
 }
+*/

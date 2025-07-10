@@ -1,5 +1,5 @@
 // lib/screens/add_edit_budget_screen.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/budget.dart'; // Importar el modelo Budget
@@ -762,3 +762,4 @@ class _AddEditBudgetScreenState extends State<AddEditBudgetScreen> {
     ); // <- Cierre de Scaffold
   }
 }
+*/

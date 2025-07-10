@@ -1,5 +1,5 @@
 // lib/screens/add_edit_category_screen.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mis_finanza/models/category.dart'; // Importar el modelo Category
@@ -425,3 +425,4 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
     );
   }
 }
+*/

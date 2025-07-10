@@ -1,5 +1,5 @@
 // lib/screens/account_movements_screen.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/account.dart';
@@ -824,3 +824,4 @@ class _AccountMovementsScreenState extends State<AccountMovementsScreen> {
     );
   }
 }
+*/

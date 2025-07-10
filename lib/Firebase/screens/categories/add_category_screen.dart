@@ -1,5 +1,5 @@
 // lib/screens/add_category_screen.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mis_finanza/models/category.dart';
@@ -171,3 +171,4 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
     );
   }
 }
+*/

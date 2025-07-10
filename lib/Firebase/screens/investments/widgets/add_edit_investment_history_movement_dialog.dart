@@ -1,5 +1,5 @@
 // lib/screens/investments/widgets/add_edit_investment_history_movement_dialog.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Necesario para Timestamp
 import 'package:intl/intl.dart'; // Para formatear fechas
@@ -327,3 +327,4 @@ class _AddEditInvestmentHistoryMovementDialogState extends State<AddEditInvestme
     );
   }
 }
+*/

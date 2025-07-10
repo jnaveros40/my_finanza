@@ -1,5 +1,5 @@
 // lib/screens/categories_screen.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mis_finanza/models/category.dart';
@@ -538,4 +538,4 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         return Colors.grey;
     }
   }
-}
+}*/
