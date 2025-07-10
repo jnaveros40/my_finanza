@@ -82,7 +82,7 @@ class _SupabaseLoginScreenState extends State<SupabaseLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login Supabase')),
+      appBar: AppBar(title: const Text('Inicio de sesión')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

@@ -6,6 +6,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/Auth/login_screen.dart';
+import 'supabase/auth_service_supabase.dart';
+import 'screens/dashboard/dashboard_screen.dart';
 import 'supabase/supabase_init.dart';
 // import 'services/push_notification_service.dart';
 
@@ -248,8 +250,50 @@ class MyApp extends StatelessWidget {
       ),
       // Usar el themeMode del ThemeManager para controlar qué tema se aplica
       themeMode: themeManager.themeMode,
-      // Pantalla de login aislada para Supabase
-      home: SupabaseLoginScreen(),
+      // Control de sesión: si hay usuario, ir al dashboard; si no, al login
+      home: const SessionChecker(),
     );
   }
 }
+
+// Widget que decide a dónde ir según la sesión de Supabase
+class SessionChecker extends StatefulWidget {
+  const SessionChecker({Key? key}) : super(key: key);
+
+  @override
+  State<SessionChecker> createState() => _SessionCheckerState();
+}
+
+class _SessionCheckerState extends State<SessionChecker> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkSession());
+  }
+
+  void _checkSession() {
+    final user = SupabaseAuthService().currentUser;
+    if (user != null && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(email: user.email ?? ''),
+        ),
+      );
+    } else if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const SupabaseLoginScreen(),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Pantalla de carga mientras se decide
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+

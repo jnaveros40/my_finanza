@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../supabase/auth_service_supabase.dart';
+import '../screens/Auth/login_screen.dart';
 
 class SupabaseDrawer extends StatelessWidget {
   final String? userEmail;
@@ -31,6 +33,20 @@ class SupabaseDrawer extends StatelessWidget {
           _buildDrawerItem(context, Icons.settings, 'Configuración', 7),
           _buildDrawerItem(context, Icons.notifications, 'Notificaciones', 8),
           _buildDrawerItem(context, Icons.update, 'Actualización de inversiones', 9),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Cerrar sesión'),
+            onTap: () async {
+              await SupabaseAuthService().signOut();
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const SupabaseLoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
+          ),
         ],
       ),
     );
@@ -41,7 +57,6 @@ class SupabaseDrawer extends StatelessWidget {
       leading: Icon(icon),
       title: Text(title),
       onTap: () {
-        // Aquí puedes manejar la navegación según el índice o el título
         Navigator.pop(context); // Cierra el drawer
         // TODO: Implementar navegación real
       },
