@@ -9,7 +9,7 @@ class CuentasCrearEditarScreen extends StatefulWidget {
   @override
   State<CuentasCrearEditarScreen> createState() => _CuentasCrearEditarScreenState();
 }
-
+class _CuentasCrearEditarScreenState extends State<CuentasCrearEditarScreen> {
   late TextEditingController nombreCtrl;
   late TextEditingController saldoCtrl;
   late TextEditingController tasaCtrl;
