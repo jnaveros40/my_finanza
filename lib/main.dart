@@ -1,122 +1,304 @@
-import 'package:flutter/material.dart';
+// lib/main.dart
 
-void main() {
-  runApp(const MyApp());
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart'; // Importar el paquete provider
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'firebase_options.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/core/main_app_screen.dart';
+import 'services/push_notification_service.dart';
+
+// Clase para manejar el estado del tema (claro/oscuro y ahora el acento de color)
+class ThemeManager extends ChangeNotifier {
+  ThemeMode _themeMode = ThemeMode.system; // Tema por defecto: el del sistema
+  Color _accentColor = Colors.black; // Color de acento por defecto
+  bool _isHighContrastMode = false; // Modo de alto contraste
+
+  ThemeManager() {
+    _loadThemeFromPrefs();
+  }
+
+  ThemeMode get themeMode => _themeMode;
+  bool get isHighContrastMode => _isHighContrastMode;
+    // Getter que devuelve el color efectivo basado en el modo de contraste
+  Color get accentColor {
+    if (_isHighContrastMode) {
+      // En modo alto contraste, usar negro para tema claro y blanco para tema oscuro
+      if (_themeMode == ThemeMode.dark) {
+        return Colors.white;
+      } else if (_themeMode == ThemeMode.light) {
+        return Colors.black;
+      } else {
+        // Para ThemeMode.system, usar negro como default pero esto se podría mejorar
+        // con context awareness del brillo del sistema
+        return Colors.black;
+      }
+    }
+    return _accentColor;
+  }
+
+  // Método helper para obtener el color efectivo con context del sistema
+  Color getEffectiveAccentColor(BuildContext context) {
+    if (_isHighContrastMode) {
+      final brightness = _themeMode == ThemeMode.system 
+          ? MediaQuery.of(context).platformBrightness 
+          : (_themeMode == ThemeMode.dark ? Brightness.dark : Brightness.light);
+      
+      return brightness == Brightness.dark ? Colors.white : Colors.black;
+    }
+    return _accentColor;
+  }
+
+  // Getter para obtener el color base sin aplicar alto contraste
+  Color get baseAccentColor => _accentColor;
+
+  Future<void> _loadThemeFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final themeIndex = prefs.getInt('themeMode') ?? 0;
+    final accentColorValue = prefs.getInt('accentColor') ?? Colors.teal.value;
+    final highContrastMode = prefs.getBool('isHighContrastMode') ?? false;
+    
+    _themeMode = ThemeMode.values[themeIndex];
+    _accentColor = Color(accentColorValue);
+    _isHighContrastMode = highContrastMode;
+    notifyListeners();
+  }
+
+  // Método para cambiar el tema
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('themeMode', mode.index);
+  }
+
+  // Método para cambiar el color de acento base
+  Future<void> setAccentColor(Color color) async {
+    _accentColor = color;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('accentColor', color.value);
+  }
+
+  // Método para alternar el modo de alto contraste
+  Future<void> setHighContrastMode(bool enabled) async {
+    _isHighContrastMode = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isHighContrastMode', enabled);
+  }
+}
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  // Inicialización de notificaciones locales
+  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  final InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  
+  // Inicializar notificaciones push
+  await PushNotificationService.initialize();
+  
+  // Envolver MyApp con ChangeNotifierProvider para proveer ThemeManager
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeManager(), // Crear una instancia de ThemeManager
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // Obtener la instancia de ThemeManager proporcionada por el Provider
+    final themeManager = Provider.of<ThemeManager>(context);
+
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'JNFinanza_app',
+      // --- LOCALIZACIÓN ---
+      locale: const Locale('es'), // Español por defecto
+      supportedLocales: const [
+        Locale('es'), // Español
+        Locale('en'), // Inglés (opcional, puedes quitarlo si solo quieres español)
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      // Definir el tema claro
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        // Usar el accentColor del ThemeManager como color semilla para el tema claro
+        primarySwatch: MaterialColor(themeManager.accentColor.value, {
+          50: themeManager.accentColor.withOpacity(0.1),
+          100: themeManager.accentColor.withOpacity(0.2),
+          200: themeManager.accentColor.withOpacity(0.3),
+          300: themeManager.accentColor.withOpacity(0.4),
+          400: themeManager.accentColor.withOpacity(0.5),
+          500: themeManager.accentColor.withOpacity(0.6), // El color principal
+          600: themeManager.accentColor.withOpacity(0.7),
+          700: themeManager.accentColor.withOpacity(0.8),
+          800: themeManager.accentColor.withOpacity(0.9),
+          900: themeManager.accentColor.withOpacity(1.0),
+        }),
+        brightness: Brightness.light,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: themeManager.accentColor, // Usar el acento como color semilla
+          brightness: Brightness.light,
+          primary: themeManager.accentColor, // Asegurar que el primary sea el acento
+          onPrimary: Colors.white, // Texto sobre el color primario
+          secondary: themeManager.accentColor.withOpacity(0.7), // Un tono más suave para el secundario
+          onSecondary: Colors.white,
+          surface: Colors.white, // Color de las superficies
+          onSurface: Colors.black87, // Texto sobre las superficies
+          error: Colors.redAccent, // Color para errores
+          onError: Colors.white,
+          background: Colors.white, // Color de fondo
+          onBackground: Colors.black87,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: themeManager.accentColor, // AppBar con el color de acento
+          foregroundColor: Colors.white,
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: themeManager.accentColor.withOpacity(0.8), // FAB con un tono del acento
+          foregroundColor: Colors.white,
+        ),
+        textTheme: ThemeData.light().textTheme.copyWith(
+          headlineLarge: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, fontSize: 28),
+          headlineMedium: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, fontSize: 22),
+          titleLarge: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, fontSize: 20),
+          titleMedium: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, fontSize: 16),
+          bodyLarge: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.normal, fontSize: 16),
+          bodyMedium: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.normal, fontSize: 14),
+          bodySmall: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.normal, fontSize: 12),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          filled: true,
+          fillColor: Colors.grey[50],
+          labelStyle: TextStyle(fontFamily: 'Montserrat', color: Colors.grey[700]),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            textStyle: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, fontSize: 16),
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          ),
+        ),
+        // Quitar la segunda definición de cardTheme para evitar duplicidad
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // Definir el tema oscuro
+      darkTheme: ThemeData(
+        // Usar el accentColor del ThemeManager como color semilla para el tema oscuro
+        primarySwatch: MaterialColor(themeManager.accentColor.value, {
+          50: themeManager.accentColor.withOpacity(0.1),
+          100: themeManager.accentColor.withOpacity(0.2),
+          200: themeManager.accentColor.withOpacity(0.3),
+          300: themeManager.accentColor.withOpacity(0.4),
+          400: themeManager.accentColor.withOpacity(0.5),
+          500: themeManager.accentColor.withOpacity(0.6),
+          600: themeManager.accentColor.withOpacity(0.7),
+          700: themeManager.accentColor.withOpacity(0.8),
+          800: themeManager.accentColor.withOpacity(0.9),
+          900: themeManager.accentColor.withOpacity(1.0),
+        }),
+        brightness: Brightness.dark,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: themeManager.accentColor, // Usar el acento como color semilla
+          brightness: Brightness.dark,
+          primary: themeManager.accentColor.withOpacity(0.8), // Un tono del acento para el primario en oscuro
+          onPrimary: Colors.white,
+          secondary: themeManager.accentColor.withOpacity(0.6),
+          onSecondary: Colors.white,
+          surface: Color(0xFF1D1D1D), // Gris muy oscuro para superficies
+          onSurface: Colors.white70,
+          error: Colors.redAccent, // Rojo claro para errores
+          onError: Colors.white,
+          background: Colors.black, // Fondo negro
+          onBackground: Colors.white70,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Color(0xFF121212), // Negro/gris muy oscuro para AppBar
+          foregroundColor: Colors.white,
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: themeManager.accentColor.withOpacity(0.8), // FAB con un tono del acento
+          foregroundColor: Colors.white,
+        ),
+        textTheme: ThemeData.dark().textTheme.copyWith(
+          headlineLarge: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, fontSize: 28),
+          headlineMedium: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, fontSize: 22),
+          titleLarge: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, fontSize: 20),
+          titleMedium: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, fontSize: 16),
+          bodyLarge: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.normal, fontSize: 16),
+          bodyMedium: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.normal, fontSize: 14),
+          bodySmall: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.normal, fontSize: 12),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          filled: true,
+          fillColor: Color(0xFF232323),
+          labelStyle: TextStyle(fontFamily: 'Montserrat', color: Colors.grey[300]),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            textStyle: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, fontSize: 16),
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          ),
+        ),
+        // Quitar la segunda definición de cardTheme para evitar duplicidad
+      ),
+      // Usar el themeMode del ThemeManager para controlar qué tema se aplica
+      themeMode: themeManager.themeMode,
+      // Usar StreamBuilder para escuchar cambios en el estado de autenticación
+      // Ahora navega a AuthCheckScreen, que decidirá si mostrar Login o MainAppScreen
+      home: AuthCheckScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+// Widget para verificar el estado de autenticación y mostrar la pantalla correcta
+class AuthCheckScreen extends StatelessWidget {
+  const AuthCheckScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Scaffold(body: Center(child: Text('Error: ${snapshot.error}')));
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        }        // Si hay usuario autenticado, ir a la pantalla principal con la navegación inferior
+        if (snapshot.hasData) {
+          return MainAppScreen(initialIndex: 0); // Navegar a MainAppScreen iniciando en Dashboard (índice 0)
+        }
+
+        // Si no hay usuario autenticado
+        return LoginScreen();
+      },
     );
   }
 }
