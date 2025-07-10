@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../supabase/auth_service_supabase.dart';
 import '../screens/Auth/login_screen.dart';
+import '../screens/cuentas/cuentas_screen.dart';
+import '../screens/dashboard/dashboard_screen.dart';
 
 class SupabaseDrawer extends StatelessWidget {
   final String? userEmail;
@@ -58,7 +60,19 @@ class SupabaseDrawer extends StatelessWidget {
       title: Text(title),
       onTap: () {
         Navigator.pop(context); // Cierra el drawer
-        // TODO: Implementar navegación real
+        switch (title) {
+          case 'Dashboard':
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => DashboardScreen(email: userEmail ?? '')),
+            );
+            break;
+          case 'Cuentas':
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const CuentasScreen()),
+            );
+            break;
+          // Aquí puedes agregar navegación para otras secciones
+        }
       },
     );
   }

@@ -5,7 +5,7 @@ create table cuentas (
   tipo_cuenta text not null,
   moneda text not null,
   saldo_inicial numeric not null,
-  tasa_rendimiento numeric not null,
-  llave text not null,
-  numero_cuenta text not null
+  tasa_rendimiento numeric,
+  llave text,
+  numero_cuenta text
 );

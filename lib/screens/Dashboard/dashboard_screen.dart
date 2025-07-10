@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../Service/supabase_drawer.dart';
+import '../../Service/drawer.dart';
 
 
 class DashboardScreen extends StatelessWidget {
@@ -9,7 +9,7 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard Supabase')),
+      appBar: AppBar(title: const Text('Dashboard')),
       drawer: SupabaseDrawer(userEmail: email),
       body: Center(
         child: Text('Bienvenido, $email!', style: const TextStyle(fontSize: 24)),

@@ -11,8 +11,15 @@ class CuentaServiceSupabase {
   }
 
   Future<Cuenta> addCuenta(Cuenta cuenta) async {
-    final inserted = await _client.from(_table).insert(cuenta.toMap()).select().single();
-    return Cuenta.fromMap(inserted);
+    print('Intentando guardar cuenta: ${cuenta.toMap()}');
+    try {
+      final inserted = await _client.from(_table).insert(cuenta.toMap()).select().single();
+      print('Respuesta de Supabase: $inserted');
+      return Cuenta.fromMap(inserted);
+    } catch (e) {
+      print('Error al guardar cuenta: $e');
+      rethrow;
+    }
   }
 
   Future<void> updateCuenta(Cuenta cuenta) async {

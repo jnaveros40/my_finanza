@@ -33,8 +33,7 @@ class Cuenta {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
+    final map = <String, dynamic>{
       'nombre': nombre,
       'tipo_cuenta': tipoCuenta,
       'moneda': moneda,
@@ -43,5 +42,9 @@ class Cuenta {
       'llave': llave,
       'numero_cuenta': numeroCuenta,
     };
+    if (id != null) {
+      map['id'] = id;
+    }
+    return map;
   }
 }
