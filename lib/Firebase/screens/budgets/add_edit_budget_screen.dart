@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mis_finanza/models/budget.dart'; // Importar el modelo Budget
-import 'package:mis_finanza/models/category.dart'; // Importar el modelo Category
-import 'package:mis_finanza/services/firestore_service/index.dart';
+import '../../models/budget.dart'; // Importar el modelo Budget
+import '../../models/category.dart'; // Importar el modelo Category
+import '../../services/firestore_service/index.dart';
 import 'package:uuid/uuid.dart'; // Necesario para generar IDs únicos
 import 'package:intl/intl.dart'; // Para formatear moneda
 //import 'package:collection/collection.dart'; // Para firstWhereOrNull

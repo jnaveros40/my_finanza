@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mis_finanza/models/budget.dart';
-import 'package:mis_finanza/models/movement.dart';
-import 'package:mis_finanza/models/category.dart';
-import 'package:mis_finanza/services/firestore_service/index.dart';
-import 'package:mis_finanza/screens/budgets/add_edit_budget_screen.dart';
+import '../../models/budget.dart';
+import '../../models/movement.dart';
+import '../../models/category.dart';
+import '../../services/firestore_service/index.dart';
+import '../../screens/budgets/add_edit_budget_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';

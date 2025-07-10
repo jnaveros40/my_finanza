@@ -1,34 +1,29 @@
-// lib/screens/edit_account_screen.dart
+// lib/screens/add_account_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mis_finanza/models/account.dart';
-import 'package:mis_finanza/services/firestore_service.dart';
-import 'package:intl/intl.dart'; // Para formatear fechas y moneda
+import '../../models/account.dart';
+import '../../services/firestore_service/index.dart';
+import 'package:intl/intl.dart'; // Para formatear fechas
 
-
-class EditAccountScreen extends StatefulWidget {
-  final Account account; // Recibe la cuenta a editar
-
-  const EditAccountScreen({super.key, required this.account});
+class AddAccountScreen extends StatefulWidget {
+  const AddAccountScreen({super.key});
 
   @override
-  _EditAccountScreenState createState() => _EditAccountScreenState();
+  _AddAccountScreenState createState() => _AddAccountScreenState();
 }
 
-class _EditAccountScreenState extends State<EditAccountScreen> {
+class _AddAccountScreenState extends State<AddAccountScreen> {
   final _formKey = GlobalKey<FormState>();
-  final FirestoreService _firestoreService = FirestoreService();
   final User? currentUser = FirebaseAuth.instance.currentUser;
 
-  // Controladores pre-llenados con los datos de la cuenta que recibimos
+  // Controladores para los campos del formulario
   final TextEditingController _nameController = TextEditingController();
-  // final TextEditingController _initialBalanceController = TextEditingController(); // Ya no necesitamos este campo en edición
-  final TextEditingController _displayBalanceController = TextEditingController(); // <-- NUEVO controlador para mostrar Saldo Actual / Cupo Disponible (READ-ONLY)
+  final TextEditingController _initialBalanceController = TextEditingController(); // Usado para Saldo Inicial (no CC)
   final TextEditingController _yieldRateController = TextEditingController();
   final TextEditingController _savingsTargetAmountController = TextEditingController();
   final TextEditingController _savingsTargetDateController = TextEditingController();
-  final TextEditingController _creditLimitController = TextEditingController();  // NUEVOS CONTROLADORES PARA TARJETAS DE CRÉDITO
+  final TextEditingController _creditLimitController = TextEditingController(); // <-- NUEVO controlador para Cupo Inicial  // NUEVOS CONTROLADORES PARA TARJETAS DE CRÉDITO
   final TextEditingController _cutOffDayController = TextEditingController();
   final TextEditingController _paymentDueDayController = TextEditingController();
   
@@ -37,21 +32,134 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
   final TextEditingController _customKeyController = TextEditingController();
 
 
-  // Valores seleccionados pre-llenados (el tipo no será editable, solo se muestra)
-  // String _selectedAccountType = 'Cuenta de ahorro'; // Ya no necesitamos esto si el tipo no es editable
-  String _selectedCurrency = 'COP'; // Valor por defecto, se sobrescribirá
+  // Valores seleccionados para Dropdowns
+  String _selectedAccountType = 'Cuenta de ahorro'; // Valor por defecto
+  String _selectedCurrency = 'COP'; // Valor por defecto
 
-   // Lista de opciones de moneda (el tipo de cuenta no se edita aquí)
+  // Lista de opciones para los Dropdowns
+  final List<String> _accountTypes = [
+    'Cuenta de ahorro',
+    //'Renta Fija',
+    //'Renta Variable',
+    'Efectivo',
+    'Tarjeta de credito', // <-- Aseguramos que este tipo esté aquí
+    //'Inversiones',
+    //'Deuda', // Añadido el tipo 'Deuda' según el modelo actualizado
+  ];
   final List<String> _currencies = ['COP', 'USD', 'EUR', 'GBP', 'JPY'];
 
+  DateTime? _selectedSavingsTargetDate; // Para guardar el valor DateTime seleccionado
 
-  DateTime? _selectedSavingsTargetDate;
+  bool _isLoading = false; // Indicador de carga al guardar
 
-  bool _isLoading = false;
+  // --- Helper para saber si el tipo seleccionado es Tarjeta de Crédito ---
+  bool get _isCreditCardSelected => _selectedAccountType == 'Tarjeta de credito';
 
-  // --- Helper para saber si la cuenta que editamos es Tarjeta de Crédito ---
-  bool get _isCreditCard => widget.account.isCreditCard;
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _initialBalanceController.dispose();
+    _yieldRateController.dispose();
+    _savingsTargetAmountController.dispose();
+    _savingsTargetDateController.dispose();    _creditLimitController.dispose();
+    _cutOffDayController.dispose();
+    _paymentDueDayController.dispose();
+    _customIdController.dispose();
+    _customKeyController.dispose();
+    super.dispose();
+  }
+
+  // Función para mostrar el selector de fecha
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedSavingsTargetDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _selectedSavingsTargetDate) {
+      setState(() {
+        _selectedSavingsTargetDate = picked;
+        _savingsTargetDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
+
+  // Función para guardar la cuenta en Firestore
+  Future<void> _saveAccount() async {
+    if (_formKey.currentState!.validate()) {
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: Usuario no autenticado.')),
+        );
+        return;
+      }
+      setState(() {
+        _isLoading = true;
+      });
+      try {
+        double initialBalance = double.tryParse(_initialBalanceController.text.trim()) ?? 0.0;
+        double yieldRate = double.tryParse(_yieldRateController.text.trim()) ?? 0.0;
+        double savingsTargetAmount = double.tryParse(_savingsTargetAmountController.text.trim()) ?? 0.0;
+        double creditLimit = double.tryParse(_creditLimitController.text.trim()) ?? 0.0;        // NUEVOS CAMPOS PARA TARJETAS DE CRÉDITO
+        int? cutOffDay = _isCreditCardSelected ? int.tryParse(_cutOffDayController.text.trim()) : null;
+        int? paymentDueDay = _isCreditCardSelected ? int.tryParse(_paymentDueDayController.text.trim()) : null;
+        
+        // NUEVOS CAMPOS PERSONALIZABLES
+        String? customId = _customIdController.text.trim().isNotEmpty ? _customIdController.text.trim() : null;
+        String? customKey = _customKeyController.text.trim().isNotEmpty ? _customKeyController.text.trim() : null;
+        
+        bool isCreditCard = _isCreditCardSelected;        final newAccount = Account(
+          id: null,
+          userId: currentUser!.uid,
+          name: _nameController.text.trim(),
+          type: _selectedAccountType,
+          currency: _selectedCurrency,
+          initialBalance: isCreditCard ? 0.0 : initialBalance,
+          currentBalance: isCreditCard ? creditLimit : initialBalance,
+          yieldRate: yieldRate > 0 ? yieldRate : null,
+          savingsTargetAmount: savingsTargetAmount > 0 ? savingsTargetAmount : null,
+          savingsTargetDate: _selectedSavingsTargetDate,
+          isArchived: false,
+          order: DateTime.now().millisecondsSinceEpoch,
+          isCreditCard: isCreditCard,
+          creditLimit: isCreditCard ? creditLimit : 0.0,
+          currentStatementBalance: 0.0,
+          cutOffDay: cutOffDay,
+          paymentDueDay: paymentDueDay,
+          customId: customId,
+          customKey: customKey,
+        );
+
+        // Llamar al servicio para guardar la cuenta
+        await AccountService.saveAccount(newAccount);
+
+        // Mostrar mensaje de éxito
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cuenta guardada con éxito.')),
+        );
+
+        // Navegar de regreso
+        Navigator.pop(context);
+      } catch (e) {
+        //print('Error al guardar cuenta: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al guardar la cuenta: ${e.toString()}')),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } else {
+      // Mostrar SnackBar si la validación falla
+       ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Por favor, completa todos los campos obligatorios.')),
+        );
+    }
+  }
   // Helper methods for modern UI
   IconData _getAccountTypeIcon(String type) {
     switch (type.toLowerCase()) {
@@ -96,204 +204,6 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    // --- Pre-llenar controladores y variables con los datos de widget.account ---
-    _nameController.text = widget.account.name;
-
-    // --- Pre-llenar campos de saldo o cupo según si es Tarjeta de Crédito ---
-    if (_isCreditCard) {
-       // Para Tarjetas de Crédito:
-       // - El campo de displayBalance muestra el Cupo Disponible (Account.currentBalance en objeto)
-       _displayBalanceController.text = NumberFormat.currency(
-          locale: 'en_US', // O la locale que prefieras para formato de número
-          symbol: _getCurrencySymbol(widget.account.currency),
-          decimalDigits: 2,
-       ).format(widget.account.currentBalance); // currentBalance del objeto es Cupo Disponible
-
-       // - El campo creditLimitController muestra el Cupo Total
-       _creditLimitController.text = widget.account.creditLimit.toString();
-
-       // Pre-llenar los nuevos campos si existen
-       if (widget.account.cutOffDay != null) {
-         _cutOffDayController.text = widget.account.cutOffDay.toString();
-       }
-       if (widget.account.paymentDueDay != null) {
-         _paymentDueDayController.text = widget.account.paymentDueDay.toString();
-       }
-
-    } else {
-       // Para otras cuentas:
-       // - El campo de displayBalance muestra el Saldo Actual real
-       _displayBalanceController.text = NumberFormat.currency(
-          locale: 'en_US',
-          symbol: _getCurrencySymbol(widget.account.currency),
-          decimalDigits: 2,
-       ).format(widget.account.currentBalance); // currentBalance del objeto es Saldo Real
-
-       // Los campos relacionados con CC (creditLimit) no aplican y no se pre-llenan.
-    }
-
-    // Pre-llenar otros campos existentes
-    // _initialBalanceController.text = widget.account.initialBalance.toString(); // Ya no editable aquí
-    // _currentBalanceController.text = widget.account.currentBalance.toString(); // Reemplazado por _displayBalanceController
-    _yieldRateController.text = widget.account.yieldRate?.toString() ?? '';
-    _savingsTargetAmountController.text = widget.account.savingsTargetAmount?.toString() ?? '';
-
-    // Pre-llenar tipo y moneda seleccionados (el tipo se mostrará como read-only)
-    // _selectedAccountType = _accountTypes.contains(widget.account.type) ? widget.account.type : _accountTypes.first; // No es necesario si no hay Dropdown
-    _selectedCurrency = _currencies.contains(widget.account.currency) ? widget.account.currency : _currencies.first;    if (widget.account.savingsTargetDate != null) {
-      _selectedSavingsTargetDate = widget.account.savingsTargetDate;
-      _savingsTargetDateController.text = DateFormat('yyyy-MM-dd').format(_selectedSavingsTargetDate!);
-    }
-    
-    // --- Pre-llenar nuevos campos personalizables ---
-    _customIdController.text = widget.account.customId ?? '';
-    _customKeyController.text = widget.account.customKey ?? '';
-    // ---------------------------------------------
-  }
-
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    // _initialBalanceController.dispose(); // Ya no necesario
-    // _currentBalanceController.dispose(); // Ya no necesario
-    _displayBalanceController.dispose(); // <-- Disponer del nuevo controlador de display
-    _yieldRateController.dispose();
-    _savingsTargetAmountController.dispose();
-    _savingsTargetDateController.dispose();    _creditLimitController.dispose();
-    _cutOffDayController.dispose();
-    _paymentDueDayController.dispose();
-    _customIdController.dispose();
-    _customKeyController.dispose();
-    super.dispose();
-  }
-
-  // --- Helper para obtener el símbolo de moneda (copiado de AccountsScreen/ExpensesScreen) ---
-   String _getCurrencySymbol(String currencyCode) {
-     switch (currencyCode) {
-       case 'COP': return '\$';
-       case 'USD': return '\$';
-       case 'EUR': return '€';
-       case 'GBP': return '£';
-       case 'JPY': return '¥';
-       default: return currencyCode;
-     }
-   }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedSavingsTargetDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null && picked != _selectedSavingsTargetDate) {
-      setState(() {
-        _selectedSavingsTargetDate = picked;
-        _savingsTargetDateController.text = DateFormat('yyyy-MM-dd').format(picked);
-      });
-    }
-  }
-
-  // Función para actualizar la cuenta en Firestore
-  Future<void> _updateAccount() async {
-    if (_formKey.currentState!.validate()) {
-       if (currentUser == null || widget.account.id == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: No se puede actualizar la cuenta (usuario o ID inválido).')),
-        );
-        return;
-      }
-
-      setState(() {
-        _isLoading = true;
-      });
-
-      try {
-        // Obtener valores de los campos editables
-        double? yieldRate = double.tryParse(_yieldRateController.text.trim());
-        double? savingsTargetAmount = double.tryParse(_savingsTargetAmountController.text.trim());
-        double editedCreditLimit = _isCreditCard ? (double.tryParse(_creditLimitController.text.trim()) ?? 0.0) : 0.0;        // NUEVOS CAMPOS PARA TARJETAS DE CRÉDITO
-        int? cutOffDay = _isCreditCard ? int.tryParse(_cutOffDayController.text.trim()) : null;
-        int? paymentDueDay = _isCreditCard ? int.tryParse(_paymentDueDayController.text.trim()) : null;
-        
-        // NUEVOS CAMPOS PERSONALIZABLES
-        String? customId = _customIdController.text.trim().isNotEmpty ? _customIdController.text.trim() : null;
-        String? customKey = _customKeyController.text.trim().isNotEmpty ? _customKeyController.text.trim() : null;
-
-
-        // Crear el objeto Account actualizado usando copyWith para mantener otros campos
-        final updatedAccount = widget.account.copyWith(
-          id: widget.account.id,
-          userId: currentUser!.uid,
-          name: _nameController.text.trim(),
-          // El tipo de cuenta NO se edita aquí
-          // type: _selectedAccountType, // NO editar el tipo
-
-          currency: _selectedCurrency,
-
-          // Saldo Inicial no editable aquí
-          // initialBalance: double.tryParse(_initialBalanceController.text.trim()) ?? 0.0,
-
-          // --- Manejar currentBalance (Cupo Disponible) y campos de CC al actualizar ---
-          // El currentBalance (saldo real o cupo disponible) NO se edita directamente aquí.
-          // Si es Tarjeta de Crédito, el Cupo Disponible (currentBalance en objeto) se recalcula si se edita el Cupo Total.
-          currentBalance: _isCreditCard
-               ? editedCreditLimit - widget.account.currentStatementBalance // Nuevo Cupo Disponible = Nuevo Límite - Adeudado Actual
-               : widget.account.currentBalance, // Mantener Saldo Actual si no es CC
-          // -------------------------------------------------------------------------
-
-          yieldRate: yieldRate,
-          savingsTargetAmount: savingsTargetAmount,
-          savingsTargetDate: _selectedSavingsTargetDate,
-          // isArchived y order se mantienen con copyWith
-          // --- Actualizar NUEVOS campos (para CC) ---
-          // isCreditCard: se mantiene con copyWith
-          creditLimit: editedCreditLimit, // Actualizar el Cupo Total si es CC (será 0 para no CC)          cutOffDay: cutOffDay,
-          paymentDueDay: paymentDueDay,
-          // currentStatementBalance: NO se edita aquí, se mantiene con copyWith
-          // paymentDueDate: se mantiene con copyWith si lo añades
-          // -----------------------------------------
-          
-          // --- Actualizar nuevos campos personalizables ---
-          customId: customId,
-          customKey: customKey,
-          // -----------------------------------------------
-        );
-
-
-        // Llamar al servicio para guardar (actualizar) la cuenta
-        await _firestoreService.saveAccount(updatedAccount); // saveAccount maneja creación y actualización
-
-        // Mostrar mensaje de éxito
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Cuenta actualizada con éxito.')),
-        );
-
-        // Navegar de regreso
-        Navigator.pop(context);
-
-      } catch (e) {
-        //print('Error al actualizar cuenta: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al actualizar la cuenta: ${e.toString()}')),
-        );
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } else {
-       // Mostrar SnackBar si la validación falla
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('Por favor, completa los campos requeridos.')),
-         );
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -309,7 +219,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Editar Cuenta',
+          'Añadir Nueva Cuenta',
           style: theme.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w600,
             color: colorScheme.onSurface,
@@ -324,7 +234,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                   CircularProgressIndicator(color: colorScheme.primary),
                   const SizedBox(height: 16),
                   Text(
-                    'Actualizando cuenta...',
+                    'Guardando cuenta...',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurface.withOpacity(0.7),
                     ),
@@ -354,40 +264,30 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: _getAccountTypeColor(widget.account.type).withOpacity(0.1),
+                            color: colorScheme.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Icon(
-                            _getAccountTypeIcon(widget.account.type),
+                            Icons.add_card,
                             size: 40,
-                            color: _getAccountTypeColor(widget.account.type),
+                            color: colorScheme.primary,
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          widget.account.name,
+                          'Nueva Cuenta Financiera',
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: _getAccountTypeColor(widget.account.type).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: _getAccountTypeColor(widget.account.type).withOpacity(0.3),
-                            ),
+                        Text(
+                          'Completa la información para crear tu nueva cuenta',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurface.withOpacity(0.7),
                           ),
-                          child: Text(
-                            widget.account.type,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: _getAccountTypeColor(widget.account.type),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
@@ -400,7 +300,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[                          // Enhanced name field
+                        children: <Widget>[                          // Enhanced text field with modern styling
                           Container(
                             decoration: BoxDecoration(
                               color: colorScheme.surface,
@@ -429,7 +329,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
-                                    Icons.edit,
+                                    Icons.account_balance,
                                     size: 20,
                                     color: colorScheme.primary,
                                   ),
@@ -440,37 +340,46 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                   vertical: 20,
                                 ),
                               ),
+                              textInputAction: TextInputAction.next,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Por favor, ingresa un nombre';
                                 }
                                 return null;
                               },
+                              autofillHints: const [AutofillHints.name],
                             ),
                           ),
-                          const SizedBox(height: 20),                          // Account type display (read-only)
+                          const SizedBox(height: 20),                          // Enhanced account type dropdown
                           Container(
                             decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                              color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: colorScheme.outline.withOpacity(0.2),
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                            child: TextFormField(
+                            child: DropdownButtonFormField<String>(
                               decoration: InputDecoration(
                                 labelText: 'Tipo de Cuenta',
                                 prefixIcon: Container(
                                   margin: const EdgeInsets.all(12),
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: _getAccountTypeColor(widget.account.type).withOpacity(0.1),
+                                    color: _getAccountTypeColor(_selectedAccountType).withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
-                                    _getAccountTypeIcon(widget.account.type),
+                                    _getAccountTypeIcon(_selectedAccountType),
                                     size: 20,
-                                    color: _getAccountTypeColor(widget.account.type),
+                                    color: _getAccountTypeColor(_selectedAccountType),
                                   ),
                                 ),
                                 border: InputBorder.none,
@@ -479,55 +388,203 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                   vertical: 20,
                                 ),
                               ),
-                              initialValue: widget.account.type,
-                              readOnly: true,
-                              style: TextStyle(color: colorScheme.onSurface.withOpacity(0.7)),
-                            ),
-                          ),
-                          const SizedBox(height: 20),                          // Current balance/available credit display (read-only)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: colorScheme.outline.withOpacity(0.2),
-                              ),
-                            ),
-                            child: TextFormField(
-                              controller: _displayBalanceController,
-                              decoration: InputDecoration(
-                                labelText: _isCreditCard ? 'Cupo Disponible' : 'Saldo Actual',
-                                prefixIcon: Container(
-                                  margin: const EdgeInsets.all(12),
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: _isCreditCard ? Colors.blue.withOpacity(0.1) : Colors.green.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
+                              value: _selectedAccountType,
+                              dropdownColor: colorScheme.surface,
+                              items: _accountTypes.map((String type) {
+                                return DropdownMenuItem<String>(
+                                  value: type,
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: _getAccountTypeColor(type).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Icon(
+                                          _getAccountTypeIcon(type),
+                                          size: 16,
+                                          color: _getAccountTypeColor(type),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        type,
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  child: Icon(
-                                    _isCreditCard ? Icons.credit_card : Icons.account_balance_wallet,
-                                    size: 20,
-                                    color: _isCreditCard ? Colors.blue : Colors.green,
-                                  ),
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 20,
-                                ),
-                              ),
-                              readOnly: true,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: _isCreditCard ? Colors.blue : Colors.green,
-                              ),
+                                );
+                              }).toList(),
+                              onChanged: (newValue) {
+                                if (newValue != null) {
+                                  setState(() {
+                                    _selectedAccountType = newValue;
+                                    if (_isCreditCardSelected) {
+                                      _initialBalanceController.clear();
+                                      _yieldRateController.clear();
+                                      _savingsTargetAmountController.clear();
+                                      _savingsTargetDateController.clear();
+                                      _selectedSavingsTargetDate = null;
+                                    } else {
+                                      _creditLimitController.clear();
+                                    }
+                                  });
+                                }
+                              },
                               validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, selecciona un tipo';
+                                }
                                 return null;
                               },
                             ),
                           ),
-                          const SizedBox(height: 20),                          // Enhanced credit limit field (for credit cards only)
-                          if (_isCreditCard) ...[
+                          const SizedBox(height: 20),                          // Enhanced currency dropdown
+                          Container(
+                            decoration: BoxDecoration(
+                              color: colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: colorScheme.outline.withOpacity(0.2),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                labelText: 'Moneda',
+                                prefixIcon: Container(
+                                  margin: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.attach_money,
+                                    size: 20,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 20,
+                                ),
+                              ),
+                              value: _selectedCurrency,
+                              dropdownColor: colorScheme.surface,
+                              items: _currencies.map((String currency) {
+                                return DropdownMenuItem<String>(
+                                  value: currency,
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          currency,
+                                          style: theme.textTheme.labelSmall?.copyWith(
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        currency,
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (newValue) {
+                                if (newValue != null) {
+                                  setState(() {
+                                    _selectedCurrency = newValue;
+                                  });
+                                }
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, selecciona una moneda';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 20),                          // Enhanced initial balance field (for non-credit cards)
+                          if (!_isCreditCardSelected)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: colorScheme.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: colorScheme.outline.withOpacity(0.2),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: TextFormField(
+                                controller: _initialBalanceController,
+                                decoration: InputDecoration(
+                                  labelText: 'Saldo Inicial',
+                                  hintText: '0.00',
+                                  prefixIcon: Container(
+                                    margin: const EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      Icons.savings,
+                                      size: 20,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 20,
+                                  ),
+                                ),
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                textInputAction: TextInputAction.next,
+                                validator: (value) {
+                                  if (!_isCreditCardSelected && (value == null || value.isEmpty)) {
+                                    return 'Por favor, ingresa un saldo inicial';
+                                  }
+                                  if (!_isCreditCardSelected && (double.tryParse(value!) == null)) {
+                                    return 'Por favor, ingresa un número válido';
+                                  }
+                                  return null;
+                                },
+                                autofillHints: const [AutofillHints.transactionAmount],
+                              ),
+                            ),
+
+                          // Enhanced credit limit field (for credit cards only)
+                          if (_isCreditCardSelected)
                             Container(
                               decoration: BoxDecoration(
                                 color: colorScheme.surface,
@@ -546,7 +603,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                               child: TextFormField(
                                 controller: _creditLimitController,
                                 decoration: InputDecoration(
-                                  labelText: 'Cupo Total',
+                                  labelText: 'Cupo Inicial',
                                   hintText: '0.00',
                                   prefixIcon: Container(
                                     margin: const EdgeInsets.all(12),
@@ -568,18 +625,21 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                   ),
                                 ),
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                textInputAction: TextInputAction.next,
                                 validator: (value) {
-                                  if (_isCreditCard && (value == null || value.isEmpty)) {
-                                    return 'Por favor, ingresa el cupo total';
+                                  if (_isCreditCardSelected && (value == null || value.isEmpty)) {
+                                    return 'Por favor, ingresa el cupo inicial';
                                   }
-                                  if (_isCreditCard && (double.tryParse(value!) == null || double.parse(value) < 0)) {
+                                  if (_isCreditCardSelected && (double.tryParse(value!) == null || double.parse(value) < 0)) {
                                     return 'Por favor, ingresa un cupo válido';
                                   }
                                   return null;
                                 },
+                                autofillHints: const [AutofillHints.transactionAmount],
                               ),
                             ),
-                            const SizedBox(height: 20),
+                          const SizedBox(height: 20),                          // Enhanced credit card specific fields
+                          if (_isCreditCardSelected) ...[
                             Container(
                               decoration: BoxDecoration(
                                 color: colorScheme.surface,
@@ -620,17 +680,19 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                   ),
                                 ),
                                 keyboardType: TextInputType.number,
+                                textInputAction: TextInputAction.next,
                                 validator: (value) {
-                                  if (_isCreditCard && (value == null || value.isEmpty)) {
+                                  if (_isCreditCardSelected && (value == null || value.isEmpty)) {
                                     return 'Por favor, ingresa el día de corte';
                                   }
                                   final day = int.tryParse(value!);
-                                  if (_isCreditCard && (day == null || day < 1 || day > 31)) {
+                                  if (_isCreditCardSelected && (day == null || day < 1 || day > 31)) {
                                     return 'Día de corte inválido';
                                   }
                                   return null;
                                 },
-                              ),                            ),
+                              ),
+                            ),
                             const SizedBox(height: 20),
                             Container(
                               decoration: BoxDecoration(
@@ -660,7 +722,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(
-                                      Icons.event_available,
+                                      Icons.event,
                                       size: 20,
                                       color: Colors.red,
                                     ),
@@ -672,12 +734,13 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                   ),
                                 ),
                                 keyboardType: TextInputType.number,
+                                textInputAction: TextInputAction.next,
                                 validator: (value) {
-                                  if (_isCreditCard && (value == null || value.isEmpty)) {
+                                  if (_isCreditCardSelected && (value == null || value.isEmpty)) {
                                     return 'Por favor, ingresa el día de pago';
                                   }
                                   final day = int.tryParse(value!);
-                                  if (_isCreditCard && (day == null || day < 1 || day > 31)) {
+                                  if (_isCreditCardSelected && (day == null || day < 1 || day > 31)) {
                                     return 'Día de pago inválido';
                                   }
                                   return null;
@@ -685,9 +748,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                               ),
                             ),
                             const SizedBox(height: 20),
-                          ],
-
-                     // Los campos de Saldo Inicial (initialBalance) ya no se muestran en edición.                          // Enhanced yield rate field
+                          ],                          // Enhanced yield rate field
                           Container(
                             decoration: BoxDecoration(
                               color: colorScheme.surface,
@@ -716,7 +777,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
-                                    Icons.trending_up,
+                                    Icons.percent,
                                     size: 20,
                                     color: Colors.teal,
                                   ),
@@ -728,6 +789,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                 ),
                               ),
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              textInputAction: TextInputAction.next,
                               validator: (value) {
                                 if (value != null && value.isNotEmpty && double.tryParse(value) == null) {
                                   return 'Por favor, ingresa un número válido';
@@ -736,7 +798,9 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                               },
                             ),
                           ),
-                          const SizedBox(height: 20),                          // Enhanced savings target amount field
+                          const SizedBox(height: 20),
+
+                          // Enhanced savings target amount field
                           Container(
                             decoration: BoxDecoration(
                               color: colorScheme.surface,
@@ -765,7 +829,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
-                                    Icons.savings,
+                                    Icons.flag,
                                     size: 20,
                                     color: Colors.purple,
                                   ),
@@ -777,6 +841,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                 ),
                               ),
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              textInputAction: TextInputAction.next,
                               validator: (value) {
                                 if (value != null && value.isNotEmpty && double.tryParse(value) == null) {
                                   return 'Por favor, ingresa un número válido';
@@ -785,7 +850,9 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                               },
                             ),
                           ),
-                          const SizedBox(height: 20),                          // Enhanced savings target date field
+                          const SizedBox(height: 20),
+
+                          // Enhanced savings target date field
                           Container(
                             decoration: BoxDecoration(
                               color: colorScheme.surface,
@@ -814,7 +881,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
-                                    Icons.date_range,
+                                    Icons.calendar_month,
                                     size: 20,
                                     color: Colors.indigo,
                                   ),
@@ -833,8 +900,8 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                   vertical: 20,
                                 ),
                               ),
-                              readOnly: true,                              onTap: () => _selectDate(context),
-                              validator: (value) {
+                              readOnly: true,
+                              onTap: () => _selectDate(context),                              validator: (value) {
                                 return null;
                               },
                             ),
@@ -935,8 +1002,8 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                             ),
                           ),
                           const SizedBox(height: 32),
-
-                          // Enhanced update button
+                          
+                          // Enhanced save button
                           Container(
                             width: double.infinity,
                             height: 56,
@@ -959,7 +1026,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                               ],
                             ),
                             child: ElevatedButton(
-                              onPressed: _updateAccount,
+                              onPressed: _saveAccount,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
                                 shadowColor: Colors.transparent,
@@ -971,13 +1038,13 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
-                                    Icons.update,
+                                    Icons.save,
                                     color: colorScheme.onPrimary,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Actualizar Cuenta',
+                                    'Guardar Cuenta',
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       color: colorScheme.onPrimary,
                                       fontWeight: FontWeight.w600,

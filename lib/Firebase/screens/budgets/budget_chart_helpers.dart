@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:collection/collection.dart';
-import 'package:mis_finanza/models/budget.dart';
-import 'package:mis_finanza/models/movement.dart';
-import 'package:mis_finanza/models/category.dart';
+import '../../models/budget.dart';
+import '../../models/movement.dart';
+import '../../models/category.dart';
 import 'package:intl/intl.dart';
 
 /// Mixin que contiene todos los métodos helper para gráficos en BudgetsScreen

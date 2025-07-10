@@ -1,7 +1,7 @@
 // No se requieren imports directos de los servicios especializados para el borrado masivo
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mis_finanza/services/firestore_service/base_firestore_service.dart';
+import '../../services/firestore_service/base_firestore_service.dart';
 
 /// Servicio para borrar todos los datos del usuario autenticado
 class UserDataWipeService {

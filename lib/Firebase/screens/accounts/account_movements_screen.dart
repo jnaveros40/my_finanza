@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mis_finanza/models/account.dart'; // Importar el modelo Account
-import 'package:mis_finanza/models/movement.dart'; // Importar el modelo Movement
-import 'package:mis_finanza/services/firestore_service.dart';
+import '../../models/account.dart';
+import '../../models/movement.dart';
+import '../../services/firestore_service.dart';
 import 'package:intl/intl.dart'; // Para formatear fechas y moneda
 //import 'package:cloud_firestore/cloud_firestore.dart'; // Importar para Timestamp
 // Importar la pantalla para editar la cuenta

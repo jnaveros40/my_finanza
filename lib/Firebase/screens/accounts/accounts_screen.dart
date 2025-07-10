@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:mis_finanza/models/account.dart'; // Importa el modelo Account
+import '../../models/account.dart'; // Importa el modelo Account
 import 'package:mis_finanza/services/firestore_service.dart'; // Importa el servicio Firestore
 // Importa la pantalla para editar cuentas
 import 'package:mis_finanza/screens/auth/login_screen.dart'; // Para navegar al cerrar sesión

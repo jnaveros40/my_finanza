@@ -6,13 +6,13 @@ import 'dart:math'; // Importar para usar pow (potencia)
 import 'package:rxdart/rxdart.dart'; // Importar para combinar streams
 
 // Importa todos los modelos
-import 'package:mis_finanza/models/account.dart';
-//import 'package:mis_finanza/models/category.dart';
-//import 'package:mis_finanza/models/payment_method.dart';
-import 'package:mis_finanza/models/movement.dart';
-import 'package:mis_finanza/models/budget.dart';
-import 'package:mis_finanza/models/debt.dart';
-import 'package:mis_finanza/models/investment.dart';
+import '../../models/account.dart';
+//import '../../models/category.dart';
+//import '../../models/payment_method.dart';
+import '../../models/movement.dart';
+import '../../models/budget.dart';
+import '../../models/debt.dart';
+import '../../models/investment.dart';
 
 
 class FirestoreService {

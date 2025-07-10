@@ -1,9 +1,9 @@
 // lib/screens/budgets/budget_calculation_helpers.dart
 
 import 'package:intl/intl.dart';
-import 'package:mis_finanza/models/budget.dart';
-import 'package:mis_finanza/models/movement.dart';
-import 'package:mis_finanza/models/category.dart';
+import '../../models/budget.dart';
+import '../../models/movement.dart';
+import '../../models/category.dart';
 import 'package:collection/collection.dart';
 
 /// Mixin que contiene todos los métodos helper para cálculos en BudgetsScreen
