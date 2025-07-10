@@ -13,49 +13,65 @@ class MovimientoServiceSupabase {
   }
 
   Future<Movimiento> addMovimiento(Movimiento movimiento) async {
-    // 1. Insertar el movimiento
-    final inserted = await _client.from(_table).insert(movimiento.toMap()).select().single();
-    final nuevo = Movimiento.fromMap(inserted);
-
-    // 2. Actualizar saldos según el tipo de movimiento
+    // 1. Obtener cuentas y saldos antes
     final cuentaService = CuentaServiceSupabase();
-    // Obtener cuenta origen
     final cuentas = await cuentaService.getCuentas();
-    final cuentaOrigen = cuentas.firstWhere((c) => c.id == nuevo.cuentaId);
+    final cuentaOrigen = cuentas.firstWhere((c) => c.id == movimiento.cuentaId);
     Cuenta? cuentaDestino;
-    if (nuevo.cuentaDestinoId != null) {
-      cuentaDestino = cuentas.firstWhere((c) => c.id == nuevo.cuentaDestinoId, orElse: () => cuentaOrigen);
+    if (movimiento.cuentaDestinoId != null) {
+      cuentaDestino = cuentas.firstWhere((c) => c.id == movimiento.cuentaDestinoId, orElse: () => cuentaOrigen);
     }
 
-    double saldoOrigen = cuentaOrigen.saldoActual;
-    double saldoDestino = cuentaDestino?.saldoActual ?? 0;
+    double saldoOrigenAntes = cuentaOrigen.saldoActual;
+    double saldoDestinoAntes = cuentaDestino?.saldoActual ?? 0;
+    double saldoOrigenDespues = saldoOrigenAntes;
+    double saldoDestinoDespues = saldoDestinoAntes;
 
-    switch (nuevo.tipoMovimiento.toLowerCase()) {
+    switch (movimiento.tipoMovimiento.toLowerCase()) {
       case 'ingreso':
-        saldoOrigen += nuevo.monto;
+        saldoOrigenDespues += movimiento.monto;
         break;
       case 'gasto':
-        saldoOrigen -= nuevo.monto;
+        saldoOrigenDespues -= movimiento.monto;
         break;
       case 'transferencia':
-        saldoOrigen -= nuevo.monto;
+        saldoOrigenDespues -= movimiento.monto;
         if (cuentaDestino != null && cuentaDestino.id != cuentaOrigen.id) {
-          saldoDestino += nuevo.monto;
+          saldoDestinoDespues += movimiento.monto;
         }
         break;
       case 'pago':
-        saldoOrigen -= nuevo.monto;
+        saldoOrigenDespues -= movimiento.monto;
         if (cuentaDestino != null && cuentaDestino.id != cuentaOrigen.id) {
-          saldoDestino += nuevo.monto;
+          saldoDestinoDespues += movimiento.monto;
         }
         break;
     }
 
-    // Actualizar cuenta origen
-    await _client.from('cuentas').update({'saldo_actual': saldoOrigen}).eq('id', cuentaOrigen.id ?? 0);
-    // Actualizar cuenta destino si corresponde
+    // 2. Insertar el movimiento con los saldos antes y después
+    final movimientoConSaldos = Movimiento(
+      id: movimiento.id,
+      descripcion: movimiento.descripcion,
+      monto: movimiento.monto,
+      fecha: movimiento.fecha,
+      cuentaId: movimiento.cuentaId,
+      categoriaId: movimiento.categoriaId,
+      tipoMovimiento: movimiento.tipoMovimiento,
+      observacion: movimiento.observacion,
+      cuentaDestinoId: movimiento.cuentaDestinoId,
+      saldoOrigenAntes: saldoOrigenAntes,
+      saldoOrigenDespues: saldoOrigenDespues,
+      saldoDestinoAntes: movimiento.cuentaDestinoId != null ? saldoDestinoAntes : null,
+      saldoDestinoDespues: movimiento.cuentaDestinoId != null ? saldoDestinoDespues : null,
+    );
+    final inserted = await _client.from(_table).insert(movimientoConSaldos.toMap()).select().single();
+    final nuevo = Movimiento.fromMap(inserted);
+
+    // 3. Actualizar cuenta origen
+    await _client.from('cuentas').update({'saldo_actual': saldoOrigenDespues}).eq('id', cuentaOrigen.id ?? 0);
+    // 4. Actualizar cuenta destino si corresponde
     if (cuentaDestino != null && cuentaDestino.id != cuentaOrigen.id) {
-      await _client.from('cuentas').update({'saldo_actual': saldoDestino}).eq('id', cuentaDestino.id ?? 0);
+      await _client.from('cuentas').update({'saldo_actual': saldoDestinoDespues}).eq('id', cuentaDestino.id ?? 0);
     }
 
     return nuevo;

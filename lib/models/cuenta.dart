@@ -8,6 +8,9 @@ class Cuenta {
   final double tasaRendimiento;
   final String llave;
   final String numeroCuenta;
+  final double? cupo;
+  final int? fechaCorte;
+  final int? fechaPago;
 
   Cuenta({
     this.id,
@@ -19,6 +22,9 @@ class Cuenta {
     required this.tasaRendimiento,
     required this.llave,
     required this.numeroCuenta,
+    this.cupo,
+    this.fechaCorte,
+    this.fechaPago,
   });
 
   factory Cuenta.fromMap(Map<String, dynamic> map) {
@@ -32,6 +38,9 @@ class Cuenta {
       tasaRendimiento: (map['tasa_rendimiento'] as num?)?.toDouble() ?? 0.0,
       llave: map['llave'] ?? '',
       numeroCuenta: map['numero_cuenta'] ?? '',
+      cupo: (map['cupo'] as num?)?.toDouble(),
+      fechaCorte: map['fecha_corte'] as int?,
+      fechaPago: map['fecha_pago'] as int?,
     );
   }
 
@@ -45,6 +54,9 @@ class Cuenta {
       'tasa_rendimiento': tasaRendimiento,
       'llave': llave,
       'numero_cuenta': numeroCuenta,
+      'cupo': cupo,
+      'fecha_corte': fechaCorte,
+      'fecha_pago': fechaPago,
     };
     if (id != null) {
       map['id'] = id;

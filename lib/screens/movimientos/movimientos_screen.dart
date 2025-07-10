@@ -249,6 +249,10 @@ class _MovimientosScreenState extends State<MovimientosScreen> {
                       DataColumn(label: Text('Categoría')),
                       DataColumn(label: Text('Fecha')),
                       DataColumn(label: Text('Cuenta destino')),
+                      DataColumn(label: Text('Saldo Origen Antes')),
+                      DataColumn(label: Text('Saldo Origen Después')),
+                      DataColumn(label: Text('Saldo Destino Antes')),
+                      DataColumn(label: Text('Saldo Destino Después')),
                       DataColumn(label: Text('Observación')),
                       DataColumn(label: Text('Acciones')),
                     ],
@@ -260,6 +264,10 @@ class _MovimientosScreenState extends State<MovimientosScreen> {
                       DataCell(Text(_categorias.firstWhere((c) => c.id == m.categoriaId, orElse: () => Categoria(id: 0, nombre: '-', tipoCategoria: '-', tipoPresupuesto: '-')).nombre)),
                       DataCell(Text(m.fecha.toLocal().toString().split(' ')[0])),
                       DataCell(Text(m.cuentaDestinoId != null ? _cuentas.firstWhere((c) => c.id == m.cuentaDestinoId, orElse: () => Cuenta(id: 0, nombre: '-', tipoCuenta: '-', moneda: '-', saldoInicial: 0, saldoActual: 0, tasaRendimiento: 0, llave: '-', numeroCuenta: '-')).nombre : '-')),
+                      DataCell(Text(m.saldoOrigenAntes?.toStringAsFixed(2) ?? '-')),
+                      DataCell(Text(m.saldoOrigenDespues?.toStringAsFixed(2) ?? '-')),
+                      DataCell(Text(m.saldoDestinoAntes?.toStringAsFixed(2) ?? '-')),
+                      DataCell(Text(m.saldoDestinoDespues?.toStringAsFixed(2) ?? '-')),
                       DataCell(Text(m.observacion ?? '')),
                       DataCell(Row(
                         children: [

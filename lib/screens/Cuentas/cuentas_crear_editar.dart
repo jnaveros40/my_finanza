@@ -10,12 +10,14 @@ class CuentasCrearEditarScreen extends StatefulWidget {
   State<CuentasCrearEditarScreen> createState() => _CuentasCrearEditarScreenState();
 }
 
-class _CuentasCrearEditarScreenState extends State<CuentasCrearEditarScreen> {
   late TextEditingController nombreCtrl;
   late TextEditingController saldoCtrl;
   late TextEditingController tasaCtrl;
   late TextEditingController llaveCtrl;
   late TextEditingController numeroCtrl;
+  late TextEditingController cupoCtrl;
+  late TextEditingController fechaCorteCtrl;
+  late TextEditingController fechaPagoCtrl;
   String tipoCuenta = 'Cuenta de ahorro';
   String moneda = 'COP';
   final List<String> tiposCuenta = [
@@ -40,6 +42,9 @@ class _CuentasCrearEditarScreenState extends State<CuentasCrearEditarScreen> {
     tasaCtrl = TextEditingController(text: c?.tasaRendimiento.toString() ?? '');
     llaveCtrl = TextEditingController(text: c?.llave ?? '');
     numeroCtrl = TextEditingController(text: c?.numeroCuenta ?? '');
+    cupoCtrl = TextEditingController(text: c?.cupo?.toString() ?? '');
+    fechaCorteCtrl = TextEditingController(text: c?.fechaCorte?.toString() ?? '');
+    fechaPagoCtrl = TextEditingController(text: c?.fechaPago?.toString() ?? '');
   }
 
   @override
@@ -49,6 +54,9 @@ class _CuentasCrearEditarScreenState extends State<CuentasCrearEditarScreen> {
     tasaCtrl.dispose();
     llaveCtrl.dispose();
     numeroCtrl.dispose();
+    cupoCtrl.dispose();
+    fechaCorteCtrl.dispose();
+    fechaPagoCtrl.dispose();
     super.dispose();
   }
 
@@ -70,6 +78,9 @@ class _CuentasCrearEditarScreenState extends State<CuentasCrearEditarScreen> {
       tasaRendimiento: double.tryParse(tasaCtrl.text) ?? 0,
       llave: llaveCtrl.text,
       numeroCuenta: numeroCtrl.text,
+      cupo: tipoCuenta == 'Tarjeta crédito' ? double.tryParse(cupoCtrl.text) ?? 0 : null,
+      fechaCorte: tipoCuenta == 'Tarjeta crédito' ? int.tryParse(fechaCorteCtrl.text) : null,
+      fechaPago: tipoCuenta == 'Tarjeta crédito' ? int.tryParse(fechaPagoCtrl.text) : null,
     );
     widget.onSave(cuenta);
     Navigator.pop(context);
@@ -100,6 +111,13 @@ class _CuentasCrearEditarScreenState extends State<CuentasCrearEditarScreen> {
             TextField(controller: tasaCtrl, decoration: const InputDecoration(labelText: 'Tasa de rendimiento'), keyboardType: TextInputType.number),
             TextField(controller: llaveCtrl, decoration: const InputDecoration(labelText: 'Llave')),
             TextField(controller: numeroCtrl, decoration: const InputDecoration(labelText: 'Número de cuenta')),
+            if (tipoCuenta == 'Tarjeta crédito') ...[
+              const SizedBox(height: 16),
+              Text('Datos de tarjeta de crédito', style: TextStyle(fontWeight: FontWeight.bold)),
+              TextField(controller: cupoCtrl, decoration: const InputDecoration(labelText: 'Cupo'), keyboardType: TextInputType.number),
+              TextField(controller: fechaCorteCtrl, decoration: const InputDecoration(labelText: 'Día de corte (1-30)'), keyboardType: TextInputType.number),
+              TextField(controller: fechaPagoCtrl, decoration: const InputDecoration(labelText: 'Día de pago (1-30)'), keyboardType: TextInputType.number),
+            ],
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _save,
