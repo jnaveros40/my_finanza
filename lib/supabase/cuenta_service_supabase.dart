@@ -3,7 +3,7 @@ import '../models/cuenta.dart';
 
 class CuentaServiceSupabase {
   final SupabaseClient _client = Supabase.instance.client;
-  final String _table = 'cuentas';
+  final String _table = 'f_cuentas';
 
   Future<List<Cuenta>> getCuentas() async {
     final data = await _client.from(_table).select().order('id');

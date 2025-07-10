@@ -1,5 +1,5 @@
 -- SQL para crear la tabla de gastos_recurrentes en Supabase
-create table gastos_recurrentes (
+create table f_gastos_recurrentes (
   id serial primary key,
   frecuencia_dias integer not null,
   descripcion text not null,

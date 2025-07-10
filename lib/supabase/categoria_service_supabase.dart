@@ -3,7 +3,7 @@ import '../models/categoria.dart';
 
 class CategoriaServiceSupabase {
   final SupabaseClient _client = Supabase.instance.client;
-  final String _table = 'categorias';
+  final String _table = 'f_categorias';
 
   Future<List<Categoria>> getCategorias() async {
     final data = await _client.from(_table).select().order('id');

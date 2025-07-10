@@ -75,7 +75,7 @@ class _CuentasCrearEditarScreenState extends State<CuentasCrearEditarScreen> {
       moneda: moneda,
       saldoInicial: saldoInicialValue,
       saldoActual: saldoActualValue,
-      tasaRendimiento: double.tryParse(tasaCtrl.text) ?? 0,
+      tasaRendimiento: tipoCuenta == 'Tarjeta crédito' ? 0 : double.tryParse(tasaCtrl.text) ?? 0,
       llave: llaveCtrl.text,
       numeroCuenta: numeroCtrl.text,
       cupo: tipoCuenta == 'Tarjeta crédito' ? double.tryParse(cupoCtrl.text) ?? 0 : null,
@@ -108,7 +108,8 @@ class _CuentasCrearEditarScreenState extends State<CuentasCrearEditarScreen> {
               onChanged: (v) => setState(() => moneda = v ?? 'COP'),
             ),
             TextField(controller: saldoCtrl, decoration: const InputDecoration(labelText: 'Saldo inicial'), keyboardType: TextInputType.number),
-            TextField(controller: tasaCtrl, decoration: const InputDecoration(labelText: 'Tasa de rendimiento'), keyboardType: TextInputType.number),
+            if (tipoCuenta != 'Tarjeta crédito')
+              TextField(controller: tasaCtrl, decoration: const InputDecoration(labelText: 'Tasa de rendimiento'), keyboardType: TextInputType.number),
             TextField(controller: llaveCtrl, decoration: const InputDecoration(labelText: 'Llave')),
             TextField(controller: numeroCtrl, decoration: const InputDecoration(labelText: 'Número de cuenta')),
             if (tipoCuenta == 'Tarjeta crédito') ...[

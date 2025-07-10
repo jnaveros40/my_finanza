@@ -5,7 +5,7 @@ import 'cuenta_service_supabase.dart';
 
 class MovimientoServiceSupabase {
   final SupabaseClient _client = Supabase.instance.client;
-  final String _table = 'movimientos';
+  final String _table = 'f_movimientos';
 
   Future<List<Movimiento>> getMovimientos() async {
     final data = await _client.from(_table).select().order('fecha', ascending: false);
@@ -68,10 +68,10 @@ class MovimientoServiceSupabase {
     final nuevo = Movimiento.fromMap(inserted);
 
     // 3. Actualizar cuenta origen
-    await _client.from('cuentas').update({'saldo_actual': saldoOrigenDespues}).eq('id', cuentaOrigen.id ?? 0);
+    await _client.from('f_cuentas').update({'saldo_actual': saldoOrigenDespues}).eq('id', cuentaOrigen.id ?? 0);
     // 4. Actualizar cuenta destino si corresponde
     if (cuentaDestino != null && cuentaDestino.id != cuentaOrigen.id) {
-      await _client.from('cuentas').update({'saldo_actual': saldoDestinoDespues}).eq('id', cuentaDestino.id ?? 0);
+      await _client.from('f_cuentas').update({'saldo_actual': saldoDestinoDespues}).eq('id', cuentaDestino.id ?? 0);
     }
 
     return nuevo;

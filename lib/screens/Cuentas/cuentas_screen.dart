@@ -93,6 +93,9 @@ class _CuentasScreenState extends State<CuentasScreen> {
                       DataColumn(label: Text('Tasa')),
                       DataColumn(label: Text('Llave')),
                       DataColumn(label: Text('N° Cuenta')),
+                      DataColumn(label: Text('Cupo')),
+                      DataColumn(label: Text('Fecha Corte')),
+                      DataColumn(label: Text('Fecha Pago')),
                       DataColumn(label: Text('Acciones')),
                     ],
                     rows: _cuentas.map((c) => DataRow(cells: [
@@ -103,6 +106,15 @@ class _CuentasScreenState extends State<CuentasScreen> {
                       DataCell(Text(c.tasaRendimiento.toString())),
                       DataCell(Text(c.llave)),
                       DataCell(Text(c.numeroCuenta)),
+                      DataCell(
+                        c.cupo != null ? Text(c.cupo!.toStringAsFixed(2)) : const Text('-'),
+                      ),
+                      DataCell(
+                        c.fechaCorte != null ? Text(c.fechaCorte.toString()) : const Text('-'),
+                      ),
+                      DataCell(
+                        c.fechaPago != null ? Text(c.fechaPago.toString()) : const Text('-'),
+                      ),
                       DataCell(Row(
                         children: [
                           IconButton(

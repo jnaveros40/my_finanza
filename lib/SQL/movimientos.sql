@@ -1,5 +1,5 @@
 -- SQL para crear la tabla de movimientos en Supabase
-create table movimientos (
+create table f_movimientos (
   id serial primary key,
   descripcion text not null,
   monto numeric not null,
@@ -17,7 +17,7 @@ create table movimientos (
 
 -- Adecuaciones posteriores:
 -- 2025-07-10: Agregadas columnas para registrar el saldo antes y después del movimiento en cuenta origen y destino.
-ALTER TABLE movimientos ADD COLUMN saldo_origen_antes numeric;
-ALTER TABLE movimientos ADD COLUMN saldo_origen_despues numeric;
-ALTER TABLE movimientos ADD COLUMN saldo_destino_antes numeric;
-ALTER TABLE movimientos ADD COLUMN saldo_destino_despues numeric;
+ALTER TABLE f_movimientos ADD COLUMN saldo_origen_antes numeric;
+ALTER TABLE f_movimientos ADD COLUMN saldo_origen_despues numeric;
+ALTER TABLE f_movimientos ADD COLUMN saldo_destino_antes numeric;
+ALTER TABLE f_movimientos ADD COLUMN saldo_destino_despues numeric;
