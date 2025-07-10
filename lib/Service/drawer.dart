@@ -3,6 +3,7 @@ import '../supabase/auth_service_supabase.dart';
 import '../screens/Auth/login_screen.dart';
 import '../screens/cuentas/cuentas_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/categorias/categorias_screen.dart';
 
 class SupabaseDrawer extends StatelessWidget {
   final String? userEmail;
@@ -69,6 +70,11 @@ class SupabaseDrawer extends StatelessWidget {
           case 'Cuentas':
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const CuentasScreen()),
+            );
+            break;
+          case 'Categorías':
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const CategoriasScreen()),
             );
             break;
           // Aquí puedes agregar navegación para otras secciones
