@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/cuenta.dart';
 import '../../supabase/cuenta_service_supabase.dart';
 import 'cuentas_crear_editar.dart';
+import '../../Service/drawer.dart';
 
 class CuentasScreen extends StatefulWidget {
   const CuentasScreen({Key? key}) : super(key: key);
@@ -76,6 +77,7 @@ class _CuentasScreenState extends State<CuentasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Cuentas')),
+      drawer: SupabaseDrawer(),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null

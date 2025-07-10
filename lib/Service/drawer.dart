@@ -5,6 +5,7 @@ import '../screens/cuentas/cuentas_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/categorias/categorias_screen.dart';
 import '../screens/gastos_recurrentes/gastos_recurrentes_screen.dart';
+import '../screens/movimientos/movimientos_screen.dart';
 
 class SupabaseDrawer extends StatelessWidget {
   final String? userEmail;
@@ -82,6 +83,11 @@ class SupabaseDrawer extends StatelessWidget {
           case 'Gastos Recurrentes':
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const GastosRecurrentesScreen()),
+            );
+            break;
+          case 'Movimientos':
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const MovimientosScreen()),
             );
             break;
           // Aquí puedes agregar navegación para otras secciones

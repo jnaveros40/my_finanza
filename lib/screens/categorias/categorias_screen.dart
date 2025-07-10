@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/categoria.dart';
 import '../../supabase/categoria_service_supabase.dart';
+import '../../Service/drawer.dart';
 
 class CategoriasScreen extends StatefulWidget {
   const CategoriasScreen({Key? key}) : super(key: key);
@@ -102,6 +103,7 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Categorías')),
+      drawer: SupabaseDrawer(),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
