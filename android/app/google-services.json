@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "635027571571",
+    "project_id": "misfinanza-fd5fa",
+    "storage_bucket": "misfinanza-fd5fa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:635027571571:android:8815b0abcb2994f9f8fb06",
+        "android_client_info": {
+          "package_name": "com.jnaveros.misfinanza"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "635027571571-4efao0ggotasmt88e6n6n8m6oiegi7d1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jnaveros.misfinanza",
+            "certificate_hash": "1104e236aa761e0efab024b909860324d591a792"
+          }
+        },
+        {
+          "client_id": "635027571571-bg3ud7962a4u3gshoa70pfdemtln09fb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6H8stXUYjrbw5De37Qqauv4eWXSJQxhA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "635027571571-bg3ud7962a4u3gshoa70pfdemtln09fb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
