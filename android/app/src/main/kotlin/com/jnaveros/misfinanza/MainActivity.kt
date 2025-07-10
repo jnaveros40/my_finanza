@@ -1,4 +1,4 @@
-package com.example.mis_finanza
+package com.jnaveros.misfinanza
 
 import io.flutter.embedding.android.FlutterActivity
 
