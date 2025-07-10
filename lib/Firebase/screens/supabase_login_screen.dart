@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import '../supabase/auth_service_supabase.dart';
 import 'supabase_home_screen.dart';
@@ -131,3 +132,4 @@ class _SupabaseLoginScreenState extends State<SupabaseLoginScreen> {
     );
   }
 }
+*/

@@ -1,5 +1,5 @@
 // lib/screens/add_payment_method_screen.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mis_finanza/models/payment_method.dart';
@@ -164,4 +164,4 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
             ),
     );
   }
-}
+}*/

@@ -1,5 +1,5 @@
 // lib/screens/payment_methods_screen.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:mis_finanza/models/payment_method.dart';
 import 'package:mis_finanza/services/firestore_service/index.dart';
@@ -144,4 +144,4 @@ class PaymentMethodsScreen extends StatelessWidget {
        // FloatingActionButton will be managed by MainAppScreen
     ); // Fin de Scaffold
   }
-}
+}*/

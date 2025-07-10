@@ -1,4 +1,4 @@
-// lib/screens/accounts/accounts_screen.dart
+/*// lib/screens/accounts/accounts_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -743,3 +743,4 @@ class _AccountsScreenState extends State<AccountsScreen> { // Estado para Accoun
     ); // Material
   } // build method
 } // _AccountsScreenState class
+*/
