@@ -1,5 +1,5 @@
 // lib/services/finnhub_service.dart
-import 'dart:convert';
+/*import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class FinnhubService {
@@ -550,4 +550,4 @@ class DividendResult {
     required this.dividends,
     required this.isFromApi,
   });
-}
+}*/

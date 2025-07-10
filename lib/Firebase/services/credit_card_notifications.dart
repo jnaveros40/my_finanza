@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+/*import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../models/account.dart';
@@ -147,3 +147,4 @@ Future<void> generateCreditCardPaymentDueNotifications(List<Account> accounts) a
   }
   // print('[CREDIT_CARD_PAYMENT_NOTIF] Proceso de generación de notificaciones de pago finalizado');
 }
+*/

@@ -1,5 +1,5 @@
 // lib/screens/movements/edit_movement_screen.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // Importar los modelos
@@ -1069,3 +1069,4 @@ class _EditMovementScreenState extends State<EditMovementScreen> {
     );
   }
 }
+*/

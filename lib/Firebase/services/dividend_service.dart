@@ -1,5 +1,5 @@
 // lib/services/dividend_service.dart
-
+/*
 import 'package:mis_finanza/models/investment.dart';
 import 'package:mis_finanza/services/finnhub_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -195,3 +195,4 @@ enum DividendStatus {
   thisMonth,
   future,
 }
+*/

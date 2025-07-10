@@ -1,4 +1,4 @@
-import 'dart:convert';
+/*import 'dart:convert';
 import 'package:mis_finanza/services/firestore_service.dart';
 import 'package:mis_finanza/services/firestore_service/category_service.dart';
 
@@ -44,3 +44,4 @@ class ExportService {
     return jsonEncode(data);
   }
 }
+*/

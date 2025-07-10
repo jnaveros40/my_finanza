@@ -1,5 +1,5 @@
 // No se requieren imports directos de los servicios especializados para el borrado masivo
-
+/*
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/firestore_service/base_firestore_service.dart';
 
@@ -43,3 +43,4 @@ class UserDataWipeService {
     await batch.commit();
   }
 }
+*/
