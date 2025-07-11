@@ -11,6 +11,7 @@ create table f_cuentas (
   llave text,
   numero_cuenta text,
   cupo numeric, -- Solo para tarjetas de crédito
+  cupo_actual numeric, -- cupo - saldo_inicial, solo para tarjetas de crédito
   fecha_corte smallint, -- Día del mes (1-30) de corte, solo para tarjetas de crédito
   fecha_pago smallint -- Día del mes (1-30) de pago, solo para tarjetas de crédito
   
@@ -22,6 +23,7 @@ create table f_cuentas (
 ALTER TABLE f_cuentas ADD COLUMN cupo numeric;
 ALTER TABLE f_cuentas ADD COLUMN fecha_corte smallint;
 ALTER TABLE f_cuentas ADD COLUMN fecha_pago smallint;
+ALTER TABLE f_cuentas ADD COLUMN cupo_actual numeric;
 -- 2025-07-10: Agregado campo saldo_actual para reflejar el saldo en tiempo real de la cuenta.
 -- Para cuentas existentes, puedes inicializar saldo_actual igual a saldo_inicial:
 -- UPDATE cuentas SET saldo_actual = saldo_inicial;
