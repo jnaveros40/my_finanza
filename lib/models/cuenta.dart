@@ -9,6 +9,7 @@ class Cuenta {
   final String llave;
   final String numeroCuenta;
   final double? cupo;
+  final double? cupoActual;
   final int? fechaCorte;
   final int? fechaPago;
 
@@ -23,6 +24,7 @@ class Cuenta {
     required this.llave,
     required this.numeroCuenta,
     this.cupo,
+    this.cupoActual,
     this.fechaCorte,
     this.fechaPago,
   });
@@ -39,6 +41,7 @@ class Cuenta {
       llave: map['llave'] ?? '',
       numeroCuenta: map['numero_cuenta'] ?? '',
       cupo: (map['cupo'] as num?)?.toDouble(),
+      cupoActual: (map['cupo_actual'] as num?)?.toDouble(),
       fechaCorte: map['fecha_corte'] as int?,
       fechaPago: map['fecha_pago'] as int?,
     );
@@ -55,6 +58,7 @@ class Cuenta {
       'llave': llave,
       'numero_cuenta': numeroCuenta,
       'cupo': cupo,
+      'cupo_actual': cupoActual,
       'fecha_corte': fechaCorte,
       'fecha_pago': fechaPago,
     };

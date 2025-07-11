@@ -3,6 +3,7 @@ import '../supabase/auth_service_supabase.dart';
 import '../screens/Auth/login_screen.dart';
 import '../screens/cuentas/cuentas_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/presupuestos/presupuestos_screen.dart';
 import '../screens/categorias/categorias_screen.dart';
 import '../screens/gastos_recurrentes/gastos_recurrentes_screen.dart';
 import '../screens/movimientos/movimientos_screen.dart';
@@ -88,6 +89,11 @@ class SupabaseDrawer extends StatelessWidget {
           case 'Movimientos':
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const MovimientosScreen()),
+            );
+            break;
+          case 'Presupuestos':
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => PresupuestosScreen()),
             );
             break;
           // Aquí puedes agregar navegación para otras secciones

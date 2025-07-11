@@ -54,18 +54,22 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
                   DropdownMenuItem(value: 'Gasto', child: Text('Gasto')),
                   DropdownMenuItem(value: 'Ingreso', child: Text('Ingreso')),
                 ],
-                onChanged: (v) => tipoCategoria = v ?? 'Gasto',
+                onChanged: (v) {
+                  tipoCategoria = v ?? 'Gasto';
+                  if (tipoCategoria == 'Ingreso') tipoPresupuesto = '';
+                },
               ),
-              DropdownButtonFormField<String>(
-                value: tipoPresupuesto,
-                decoration: const InputDecoration(labelText: 'Tipo de presupuesto'),
-                items: const [
-                  DropdownMenuItem(value: 'Necesidades', child: Text('Necesidades')),
-                  DropdownMenuItem(value: 'Deseos', child: Text('Deseos')),
-                  DropdownMenuItem(value: 'Ahorros', child: Text('Ahorros')),
-                ],
-                onChanged: (v) => tipoPresupuesto = v ?? 'Necesidades',
-              ),
+              if (tipoCategoria != 'Ingreso')
+                DropdownButtonFormField<String>(
+                  value: tipoPresupuesto,
+                  decoration: const InputDecoration(labelText: 'Tipo de presupuesto'),
+                  items: const [
+                    DropdownMenuItem(value: 'Necesidades', child: Text('Necesidades')),
+                    DropdownMenuItem(value: 'Deseos', child: Text('Deseos')),
+                    DropdownMenuItem(value: 'Ahorros', child: Text('Ahorros')),
+                  ],
+                  onChanged: (v) => tipoPresupuesto = v ?? 'Necesidades',
+                ),
             ],
           ),
         ),
@@ -77,7 +81,7 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
                 id: categoria?.id,
                 nombre: nombreCtrl.text,
                 tipoCategoria: tipoCategoria,
-                tipoPresupuesto: tipoPresupuesto,
+                tipoPresupuesto: tipoCategoria == 'Ingreso' ? '' : tipoPresupuesto,
               );
               if (categoria == null) {
                 await _service.addCategoria(nueva);

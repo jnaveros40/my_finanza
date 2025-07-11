@@ -8,10 +8,15 @@ class Movimiento {
   final String tipoMovimiento;
   final String? observacion;
   final int? cuentaDestinoId;
+  final int? presupuestoId;
+  final double? presupuestoActual;
+  final double? presupuestoNuevo;
   final double? saldoOrigenAntes;
   final double? saldoOrigenDespues;
   final double? saldoDestinoAntes;
   final double? saldoDestinoDespues;
+  final double? cupoActualAntes;
+  final double? cupoActualDespues;
 
   Movimiento({
     this.id,
@@ -23,10 +28,15 @@ class Movimiento {
     required this.tipoMovimiento,
     this.observacion,
     this.cuentaDestinoId,
+    this.presupuestoId,
+    this.presupuestoActual,
+    this.presupuestoNuevo,
     this.saldoOrigenAntes,
     this.saldoOrigenDespues,
     this.saldoDestinoAntes,
     this.saldoDestinoDespues,
+    this.cupoActualAntes,
+    this.cupoActualDespues,
   });
 
   factory Movimiento.fromMap(Map<String, dynamic> map) {
@@ -40,10 +50,15 @@ class Movimiento {
       tipoMovimiento: map['tipo_movimiento'] ?? '',
       observacion: map['observacion'],
       cuentaDestinoId: map['cuenta_destino_id'],
+      presupuestoId: map['presupuesto_id'],
+      presupuestoActual: (map['presupuesto_actual'] as num?)?.toDouble(),
+      presupuestoNuevo: (map['presupuesto_nuevo'] as num?)?.toDouble(),
       saldoOrigenAntes: (map['saldo_origen_antes'] as num?)?.toDouble(),
       saldoOrigenDespues: (map['saldo_origen_despues'] as num?)?.toDouble(),
       saldoDestinoAntes: (map['saldo_destino_antes'] as num?)?.toDouble(),
       saldoDestinoDespues: (map['saldo_destino_despues'] as num?)?.toDouble(),
+      cupoActualAntes: (map['cupo_actual_antes'] as num?)?.toDouble(),
+      cupoActualDespues: (map['cupo_actual_despues'] as num?)?.toDouble(),
     );
   }
 
@@ -56,10 +71,15 @@ class Movimiento {
       'tipo_movimiento': tipoMovimiento,
       'observacion': observacion,
       'cuenta_destino_id': cuentaDestinoId,
+      'presupuesto_id': presupuestoId,
+      'presupuesto_actual': presupuestoActual,
+      'presupuesto_nuevo': presupuestoNuevo,
       'saldo_origen_antes': saldoOrigenAntes,
       'saldo_origen_despues': saldoOrigenDespues,
       'saldo_destino_antes': saldoDestinoAntes,
       'saldo_destino_despues': saldoDestinoDespues,
+      'cupo_actual_antes': cupoActualAntes,
+      'cupo_actual_despues': cupoActualDespues,
     };
     if (categoriaId != null) {
       map['categoria_id'] = categoriaId;

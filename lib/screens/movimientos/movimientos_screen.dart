@@ -214,6 +214,9 @@ class _MovimientosScreenState extends State<MovimientosScreen> {
                     tipoMovimiento: tipoMovimiento,
                     observacion: observacionCtrl.text,
                     cuentaDestinoId: cuentaDestinoId,
+                    presupuestoId: null,
+                    presupuestoActual: null,
+                    presupuestoNuevo: null,
                   );
                   if (movimiento == null) {
                     await _service.addMovimiento(nuevo);
@@ -261,6 +264,8 @@ class _MovimientosScreenState extends State<MovimientosScreen> {
                       DataColumn(label: Text('Saldo Origen Después')),
                       DataColumn(label: Text('Saldo Destino Antes')),
                       DataColumn(label: Text('Saldo Destino Después')),
+                      DataColumn(label: Text('Presupuesto Actual')),
+                      DataColumn(label: Text('Presupuesto Nuevo')),
                       DataColumn(label: Text('Observación')),
                       DataColumn(label: Text('Acciones')),
                     ],
@@ -276,6 +281,8 @@ class _MovimientosScreenState extends State<MovimientosScreen> {
                       DataCell(Text(m.saldoOrigenDespues?.toStringAsFixed(2) ?? '-')),
                       DataCell(Text(m.saldoDestinoAntes?.toStringAsFixed(2) ?? '-')),
                       DataCell(Text(m.saldoDestinoDespues?.toStringAsFixed(2) ?? '-')),
+                      DataCell(Text(m.presupuestoActual?.toStringAsFixed(2) ?? '-')),
+                      DataCell(Text(m.presupuestoNuevo?.toStringAsFixed(2) ?? '-')),
                       DataCell(Text(m.observacion ?? '')),
                       DataCell(Row(
                         children: [
