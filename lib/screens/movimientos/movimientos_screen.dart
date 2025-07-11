@@ -128,7 +128,15 @@ class _MovimientosScreenState extends State<MovimientosScreen> {
                       DropdownButtonFormField<int>(
                         value: categoriaId,
                         decoration: const InputDecoration(labelText: 'Categoría'),
-                        items: _categorias.map((c) => DropdownMenuItem(value: c.id, child: Text(c.nombre))).toList(),
+                        items: (() {
+                          List<Categoria> categoriasFiltradas = _categorias;
+                          if (tipoMovimiento == 'Gasto') {
+                            categoriasFiltradas = _categorias.where((c) => c.tipoCategoria.toLowerCase() == 'gasto').toList();
+                          } else if (tipoMovimiento == 'Ingreso') {
+                            categoriasFiltradas = _categorias.where((c) => c.tipoCategoria.toLowerCase() == 'ingreso').toList();
+                          }
+                          return categoriasFiltradas.map((c) => DropdownMenuItem(value: c.id, child: Text(c.nombre))).toList();
+                        })(),
                         onChanged: (v) => setStateDialog(() => categoriaId = v ?? categoriaId),
                         validator: (value) {
                           if (tipoMovimiento != 'Transferencia' && tipoMovimiento != 'Pago' && (value == null)) {
