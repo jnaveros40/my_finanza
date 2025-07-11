@@ -107,7 +107,8 @@ class _CuentasCrearEditarScreenState extends State<CuentasCrearEditarScreen> {
               items: monedas.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
               onChanged: (v) => setState(() => moneda = v ?? 'COP'),
             ),
-            TextField(controller: saldoCtrl, decoration: const InputDecoration(labelText: 'Saldo inicial'), keyboardType: TextInputType.number),
+            if (widget.cuenta == null)
+              TextField(controller: saldoCtrl, decoration: const InputDecoration(labelText: 'Saldo inicial'), keyboardType: TextInputType.number),
             if (tipoCuenta != 'Tarjeta crédito')
               TextField(controller: tasaCtrl, decoration: const InputDecoration(labelText: 'Tasa de rendimiento'), keyboardType: TextInputType.number),
             TextField(controller: llaveCtrl, decoration: const InputDecoration(labelText: 'Llave')),
